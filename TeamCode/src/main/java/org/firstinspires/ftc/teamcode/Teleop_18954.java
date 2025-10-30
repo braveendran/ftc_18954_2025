@@ -16,6 +16,9 @@ public class Teleop_18954 extends OpMode {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
+
+    private CommonFunc_18954 objCommonFunc;
+
     // ---------------- DRIVE SETTINGS ----------------
     private final double LOW_SPEED = 0.5;
     private final double NORMAL_SPEED = 0.75;
