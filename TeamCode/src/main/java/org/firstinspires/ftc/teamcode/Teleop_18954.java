@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 @TeleOp(name = "Teleop", group = "Test")
 public class Teleop_18954 extends OpMode {
@@ -16,6 +20,7 @@ public class Teleop_18954 extends OpMode {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
+    private boolean isBlueTeam=true;
 
     private CommonFunc_18954 objCommonFunc;
 
@@ -48,6 +53,8 @@ public class Teleop_18954 extends OpMode {
     private ShooterState shooterState = ShooterState.IDLE;
     private long stateStartTime = 0;
     private boolean shortRangeMode = false;
+
+    CommonCamera_18954 mCameraRef;
 
     // ---------------- INIT METHOD ----------------
     @Override
@@ -87,12 +94,19 @@ public class Teleop_18954 extends OpMode {
         // Stopper initial position
         stopperServo.setPosition(STOPPER_CLOSED);
 
+        //mCameraRef=new CommonCamera_18954(this);
+
+
         telemetry.addData("Status", "Initialized");
     }
 
     // ---------------- LOOP METHOD ----------------
     @Override
     public void loop() {
+
+        //----------------- CAMERA Feedback -----------------
+        //Pose3D pose=mCameraRef.telemetryAprilTag(isBlueTeam);
+
 
         // ---------------- DRIVE CONTROL ----------------
         double y = gamepad1.left_stick_y;
@@ -201,6 +215,16 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
         telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
         telemetry.addData("Shooter State", shooterState.toString());
+
+//        if(pose!=null) {
+//            telemetry.addData("X", pose.getPosition().x);
+//            telemetry.addData("Y",  pose.getPosition().y);
+//            telemetry.addData("Z",  pose.getPosition().z);
+//            telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
+//            telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+//            telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+//        }
+
         telemetry.update();
     }
 }

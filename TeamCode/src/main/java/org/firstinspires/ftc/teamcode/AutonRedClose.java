@@ -38,9 +38,9 @@ public class AutonRedClose extends LinearOpMode {
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
 
-        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.strafe_right(DRIVE_SPEED_SLOW,48, 10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,48, 10);
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
