@@ -8,21 +8,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Autonomous(name = "RedClose", group = "Autonomous")
 public class AutonRedClose extends LinearOpMode {
 
-    private final double LAUNCHER_MAX_POWER = 1.0;
-    private final double LAUNCHER_POS1_POWER = LAUNCHER_MAX_POWER*.75;
 
 
-    private final double BALLPUSHER_MAX_VELOCITY =3200;
-    private final double INTAKE_MAX_VELOCITY =3200;
-
-    static final double DRIVE_SPEED_SLOW = 0.3;
-    static final double DRIVE_SPEED_FAST = 0.6;
-
-    static final double TURN_SPEED = 0.5;
-
-
-
-
+    private AutonCloseParams params = new AutonCloseParams();
     private CommonFunc_18954 objCommonFunc;
 
 
@@ -45,30 +33,30 @@ public class AutonRedClose extends LinearOpMode {
         waitForStart();
 
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
-        objCommonFunc.StartShooter(LAUNCHER_POS1_POWER,BALLPUSHER_MAX_VELOCITY );
+        objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY );
 
 
-        objCommonFunc.encoderDrive(DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
 
-        objCommonFunc.shootPowerCore(LAUNCHER_POS1_POWER,true,BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.strafe(DRIVE_SPEED_SLOW,48, 10);
+        objCommonFunc.strafe_right(DRIVE_SPEED_SLOW,48, 10);
 
-        objCommonFunc.TurnOnIntake(INTAKE_MAX_VELOCITY,BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.encoderDrive(DRIVE_SPEED_SLOW, 42, 42, 10*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
 
         objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.encoderDrive(DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
 
-        objCommonFunc.StartShooter(LAUNCHER_POS1_POWER,BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.strafe(DRIVE_SPEED_SLOW,-48, 10);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,48, 10);
 
-        objCommonFunc.shootPowerCore(LAUNCHER_POS1_POWER,true,BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.strafe(DRIVE_SPEED_SLOW,45, -10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,45, 10);
 
 
         telemetry.addData("Autonomous", "Complete");

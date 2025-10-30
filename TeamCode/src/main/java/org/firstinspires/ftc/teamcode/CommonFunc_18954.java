@@ -197,13 +197,18 @@ public class CommonFunc_18954 {
     /**
      * Method to strafe left or right. A positive inches value strafes right.
      */
-    public void strafe(double speed, double inches, double timeoutS) {
+    public void strafe_right(double speed, double inches, double timeoutS) {
         // For strafing, the motor directions are:
         //Right: -LF, +LB, +RF, -RB
         // Left:  +LF, -LB, -RF, +RB
         encoderDrive(speed, inches, -inches, -inches, inches, timeoutS);
+    }
 
-
+    public void strafe_left(double speed, double inches, double timeoutS) {
+        // For strafing, the motor directions are:
+        //Right: -LF, +LB, +RF, -RB
+        // Left:  +LF, -LB, -RF, +RB
+        encoderDrive(speed, -inches, inches, inches, -inches, timeoutS);
     }
 
     /**
