@@ -112,6 +112,7 @@ public class CommonCamera_18954 {
             if (detection.metadata != null) {
                 // Only use tags that don't have Obelisk in them
                 if (!detection.metadata.name.contains("Obelisk")) {
+                    pose = detection.robotPose;
 
                     if (detection.metadata.name.contains("BlueAllianceCenter") && (IsBlueTeam == true)) {
                         pose = detection.robotPose;

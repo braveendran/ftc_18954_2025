@@ -20,18 +20,22 @@ public class CommonFunc_18954 {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
+    boolean bShooterRunning=false;
+
     static final double COUNTS_PER_MOTOR_REV = 537.7; // Example for a goBILDA 5203 series motor
     static final double DRIVE_GEAR_REDUCTION = 1.0;
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
 
-    // ---------------- AUTONOMOUS CONSTANTS ----------------
-    // These values MUST be tuned for your specific robot!
-
-    // Speeds for autonomous movements
 
 
-    // ---------------- STOPPER SETTINGS ----------------
+    long INITIAL_SPIN_UP_TIME=1300;
+    long GATE_DOWN_TIME=500;
+    long GATE_UP_TIME=800;
+
+    long MINIMAL_SLEEP_TIME=1;
+
+
     private final double STOPPER_CLOSED = 0.70;
     private final double STOPPER_OPEN = .94;
 
@@ -92,38 +96,39 @@ public class CommonFunc_18954 {
     public void StartShooter(double LauncherPower, double BallPusherVelocity) {
         launcherMotor.setPower(LauncherPower);
         ballPusherMotor.setVelocity(BallPusherVelocity);
+        bShooterRunning=true;
     }
     /**
      * A self-contained function to shoot 3 Power Core.
      */
-    public void shootPowerCore(double LauncherPower,boolean started ,double BallPusherVelocity) {
-        telemetry.addData("Shooter", "Starting sequence...");
-        telemetry.update();
+    public void shootPowerCore(double LauncherPower,boolean unused ,double BallPusherVelocity) {
+        //telemetry.addData("Shooter", "Starting sequence...");
+        //telemetry.update();
 
         // Spin up the launcher motor
-        if(!started) {
+        if(!bShooterRunning) {
             launcherMotor.setPower(LauncherPower);
 
             ballPusherMotor.setVelocity(BallPusherVelocity);
 
-            opMode.sleep(1200); // Wait 1.2 seconds for the motor to reach full speed
+            opMode.sleep(INITIAL_SPIN_UP_TIME); // Wait 1.2 seconds for the motor to reach full speed
         }
 
         for (int i=0;i<4;i++) {
             // Open the stopper to feed the Power Core
             stopperServo.setPosition(STOPPER_OPEN);
-            opMode.sleep(500); // Wait 0.5 seconds for the core to pass
+            opMode.sleep(GATE_DOWN_TIME); // Wait 0.5 seconds for the core to pass
 
             // Close the stopper and turn off the launcher
             stopperServo.setPosition(STOPPER_CLOSED);
-            opMode.sleep(500);
+            opMode.sleep(GATE_UP_TIME);
         }
 
         launcherMotor.setPower(0);
         ballPusherMotor.setVelocity(0);
 
-        telemetry.addData("Shooter", "Sequence complete.");
-        telemetry.update();
+        bShooterRunning=false;
+
     }
 
     public void TurnOnIntake(double IntakeVelocity,double BallPusherVelocity)
@@ -179,9 +184,10 @@ public class CommonFunc_18954 {
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutS) &&
                 (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy())) {
             // Display telemetry
-            telemetry.addData("Path", "Running to L:%7d R:%7d", leftFrontTarget, rightFrontTarget);
-            telemetry.addData("Current", "Running at L:%7d R:%7d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition());
-            telemetry.update();
+            //telemetry.addData("Path", "Running to L:%7d R:%7d", leftFrontTarget, rightFrontTarget);
+            //telemetry.addData("Current", "Running at L:%7d R:%7d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition());
+            //telemetry.update();
+            opMode.sleep(MINIMAL_SLEEP_TIME);
         }
 
         // Stop all motion
@@ -251,9 +257,11 @@ public class CommonFunc_18954 {
         rightBack.setPower(Math.abs(speed));
 
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutS) &&
-                (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy())) {
-            telemetry.addData("Path", "Strafing...");
-            telemetry.update();
+                (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy()))
+        {
+            opMode.sleep(MINIMAL_SLEEP_TIME);
+            // telemetry.addData("Path", "Strafing...");
+            // telemetry.update();
         }
 
         leftFront.setPower(0);

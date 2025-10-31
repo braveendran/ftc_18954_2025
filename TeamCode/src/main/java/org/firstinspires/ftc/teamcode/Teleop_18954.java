@@ -24,6 +24,10 @@ public class Teleop_18954 extends OpMode {
 
     private CommonFunc_18954 objCommonFunc;
 
+    private long INITIAL_SPIN_UP_TIME=1300;
+    private long GATE_DOWN_TIME=500;
+    private long GATE_UP_TIME=800;
+
     // ---------------- DRIVE SETTINGS ----------------
     private final double LOW_SPEED = 0.5;
     private final double NORMAL_SPEED = 0.75;
@@ -35,7 +39,7 @@ public class Teleop_18954 extends OpMode {
 
     private final double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.98;
 
-    private final double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.75;
+    private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.80;
 
     // ---------------- STOPPER SETTINGS ----------------
     private final double STOPPER_CLOSED = 0.70;
@@ -94,7 +98,7 @@ public class Teleop_18954 extends OpMode {
         // Stopper initial position
         stopperServo.setPosition(STOPPER_CLOSED);
 
-        //mCameraRef=new CommonCamera_18954(this);
+        mCameraRef=new CommonCamera_18954(this);
 
 
         telemetry.addData("Status", "Initialized");
@@ -105,7 +109,7 @@ public class Teleop_18954 extends OpMode {
     public void loop() {
 
         //----------------- CAMERA Feedback -----------------
-        //Pose3D pose=mCameraRef.telemetryAprilTag(isBlueTeam);
+        Pose3D pose=mCameraRef.telemetryAprilTag(isBlueTeam);
 
 
         // ---------------- DRIVE CONTROL ----------------
@@ -142,8 +146,10 @@ public class Teleop_18954 extends OpMode {
                 }
                 break;
 
+
+
             case STARTING:
-                if (System.currentTimeMillis() - stateStartTime >= 1000) { // spin-up time
+                if (System.currentTimeMillis() - stateStartTime >= INITIAL_SPIN_UP_TIME) { // spin-up time
                     shooterState = ShooterState.FEED_OPEN;
                     stateStartTime = System.currentTimeMillis();
                     stopperOpen = true;
@@ -151,7 +157,7 @@ public class Teleop_18954 extends OpMode {
                 break;
 
             case FEED_OPEN:
-                if (System.currentTimeMillis() - stateStartTime >= 500) { // 0.5 sec open
+                if (System.currentTimeMillis() - stateStartTime >= GATE_DOWN_TIME) { // 0.5 sec open
                     shooterState = ShooterState.FEED_CLOSE;
                     stateStartTime = System.currentTimeMillis();
                     stopperOpen = false;
@@ -159,7 +165,7 @@ public class Teleop_18954 extends OpMode {
                 break;
 
             case FEED_CLOSE:
-                if (System.currentTimeMillis() - stateStartTime >= 500) { // 0.5 sec close
+                if (System.currentTimeMillis() - stateStartTime >= GATE_UP_TIME) { // 0.5 sec close
                     if (!gamepad2.dpad_down) {
                         shooterState = ShooterState.FEED_OPEN;
                         stateStartTime = System.currentTimeMillis();
@@ -213,17 +219,19 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
         telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
         telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
+        telemetry.addData("Long Range Power ", LAUNCHER_LONG_RANGE_VELOCITY);
+        telemetry.addData("Short Range Power", LAUNCHER_SHORT_RANGE_VELOCITY);
         telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
         telemetry.addData("Shooter State", shooterState.toString());
 
-//        if(pose!=null) {
-//            telemetry.addData("X", pose.getPosition().x);
-//            telemetry.addData("Y",  pose.getPosition().y);
-//            telemetry.addData("Z",  pose.getPosition().z);
-//            telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
-//            telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
-//            telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
-//        }
+        if(pose!=null) {
+            telemetry.addData("X", pose.getPosition().x);
+            telemetry.addData("Y",  pose.getPosition().y);
+            telemetry.addData("Z",  pose.getPosition().z);
+            telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
+            telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+            telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+        }
 
         telemetry.update();
     }
