@@ -37,9 +37,14 @@ public class Teleop_18954 extends OpMode {
     // ---------------- LAUNCHER SETTINGS ----------------
     private final double LAUNCHER_MAX_VELOCITY = 1.0;
 
-    private final double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.98;
+    private double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.98;
 
     private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.80;
+
+    private final double LAUNCHER_SHORTTANGE_RPM = -3700;
+
+    private final double LAUNCHER_LONGRANGE_RPM = -4600;
+
     private final double LAUNCHER_SHORT_RANGE_MIN=0.60;
     private final double LAUNCHER_SHORT_RANGE_MAX=0.93;
 
@@ -47,6 +52,8 @@ public class Teleop_18954 extends OpMode {
     private long LAUNCHER_LAST_ADJUST_TIME=0;
     private final double LAUNCHER_ADJUST_HYSTERISIS=500;
     private final double LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE=0.01;
+
+    private final double LAUNCHER_MOTOR_TICKS_PER_REV = 28.0;
 
 
 
@@ -74,6 +81,8 @@ public class Teleop_18954 extends OpMode {
     CommonCamera_18954 mCameraRef;
 
     private final boolean ENABLE_CAMERA_DEFINE=true;
+
+    private double Target_RPM_Shooting=0;
 
 
 
@@ -260,9 +269,62 @@ public class Teleop_18954 extends OpMode {
 
 
 
+
+
+
         // ---------------- LAUNCHER CONTROL ----------------
+
         if (launcherOn) {
-            double powertoset = shortRangeMode ? LAUNCHER_SHORT_RANGE_VELOCITY : LAUNCHER_LONG_RANGE_VELOCITY;
+            double powertoset;
+            if(shortRangeMode)
+            {
+                Target_RPM_Shooting=LAUNCHER_SHORTTANGE_RPM;
+
+                if(getLauncherRpm() > Target_RPM_Shooting)
+                {
+                    LAUNCHER_SHORT_RANGE_VELOCITY +=0.1;
+                }
+                else
+                {
+                    LAUNCHER_SHORT_RANGE_VELOCITY-=0.1;
+                }
+
+
+
+                if (LAUNCHER_SHORT_RANGE_VELOCITY > LAUNCHER_SHORT_RANGE_MAX) {
+                    LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MAX;
+                } else if (LAUNCHER_SHORT_RANGE_VELOCITY < LAUNCHER_SHORT_RANGE_MIN) {
+                    LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MIN;
+                }
+
+                powertoset=LAUNCHER_SHORT_RANGE_VELOCITY;
+
+            }
+            else {
+                Target_RPM_Shooting=LAUNCHER_LONGRANGE_RPM;
+
+                if(getLauncherRpm() > Target_RPM_Shooting)
+                {
+                    LAUNCHER_LONG_RANGE_VELOCITY +=0.1;
+                }
+                else
+                {
+                    LAUNCHER_LONG_RANGE_VELOCITY-=0.1;
+                }
+
+
+                if (LAUNCHER_LONG_RANGE_VELOCITY > 1.0) {
+                    LAUNCHER_LONG_RANGE_VELOCITY = 1.0;
+                } else if (LAUNCHER_LONG_RANGE_VELOCITY < 0.8) {
+                    LAUNCHER_LONG_RANGE_VELOCITY = 0.8;
+                }
+
+                powertoset=LAUNCHER_LONG_RANGE_VELOCITY;
+            }
+
+
+
+
 			launcherMotor.setPower(powertoset);
                 
         } else {
@@ -282,6 +344,7 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("Short Range Power", LAUNCHER_SHORT_RANGE_VELOCITY);
         telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
         telemetry.addData("Shooter State", shooterState.toString());
+        telemetry.addData("Launcher RPM",getLauncherRpm());
 
         if(ENABLE_CAMERA_DEFINE) {
 
@@ -296,5 +359,19 @@ public class Teleop_18954 extends OpMode {
         }
 
         telemetry.update();
+    }
+
+    public double getLauncherRpm() {
+        // First, check if launcherMotor is a DcMotorEx instance to safely call getVelocity()
+        if (launcherMotor instanceof DcMotorEx) {
+            // getVelocity() returns the speed in "ticks per second"
+            double ticksPerSecond = ((DcMotorEx) launcherMotor).getVelocity();
+
+            // Convert ticks per second to revolutions per minute
+            // (ticks/sec) * (60 sec/min) / (ticks/rev) = rev/min
+            return (ticksPerSecond * 60) / LAUNCHER_MOTOR_TICKS_PER_REV;
+        }
+        // Return 0 if it's not a DcMotorEx or if something is wrong
+        return 0;
     }
 }

@@ -27,6 +27,8 @@ public class CommonFunc_18954 {
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
 
+    private final double LAUNCHER_MOTOR_TICKS_PER_REV = 28.0;
+
 
 
     long INITIAL_SPIN_UP_TIME=1300;
@@ -270,6 +272,20 @@ public class CommonFunc_18954 {
         rightBack.setPower(0);
 
         setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+    public double getLauncherRpm() {
+        // First, check if launcherMotor is a DcMotorEx instance to safely call getVelocity()
+        if (launcherMotor instanceof DcMotorEx) {
+            // getVelocity() returns the speed in "ticks per second"
+            double ticksPerSecond = ((DcMotorEx) launcherMotor).getVelocity();
+
+            // Convert ticks per second to revolutions per minute
+            // (ticks/sec) * (60 sec/min) / (ticks/rev) = rev/min
+            return (ticksPerSecond * 60) / LAUNCHER_MOTOR_TICKS_PER_REV;
+        }
+        // Return 0 if it's not a DcMotorEx or if something is wrong
+        return 0;
     }
 
 }
