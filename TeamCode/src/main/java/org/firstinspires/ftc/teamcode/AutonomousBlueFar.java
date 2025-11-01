@@ -14,6 +14,8 @@ public class AutonomousBlueFar extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        objCommonFunc = new CommonFunc_18954(this);
+
         // ---------------- INIT & HARDWARE MAPPING ----------------
         objCommonFunc.initializeHardware();
 
