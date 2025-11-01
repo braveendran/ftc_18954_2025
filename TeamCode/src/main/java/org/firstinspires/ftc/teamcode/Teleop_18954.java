@@ -58,6 +58,8 @@ public class Teleop_18954 extends OpMode {
 
     // ---------------- CONTROL FLAGS ----------------
     private boolean launcherOn = false;
+
+    public boolean intake_spitout=false;
     private boolean intakeOn = false;
     private boolean ballPusherOn = false;
     private boolean stopperOpen = false;
@@ -204,12 +206,30 @@ public class Teleop_18954 extends OpMode {
         }
 
         // ---------------- INTAKE ----------------
+        intake_spitout=gamepad1.left_bumper;
         intakeOn = gamepad1.right_bumper;
-        intakeMotor.setPower(intakeOn ? 1.0 : 0.0);
+        if(intakeOn == true) {
+            intakeMotor.setPower(1.0);
+        }
+        else if(intake_spitout == true) {
+            intakeMotor.setPower(-0.4);
+        }
+        else {
+            intakeMotor.setPower(0.0);
+        }
 
         // ---------------- BALL PUSHER ----------------
-        ballPusherOn = (shooterState != ShooterState.IDLE) || intakeOn;
-        ballPusherMotor.setPower(ballPusherOn ? 1.0 : 0.0);
+        ballPusherOn = (shooterState != ShooterState.IDLE) || intakeOn ;
+        if(ballPusherOn == true) {
+            ballPusherMotor.setPower(1.0);
+        }
+        else if(intake_spitout == true) {
+            ballPusherMotor.setPower(-0.4);
+        }
+        else {
+            ballPusherMotor.setPower(0.0);
+        }
+
 
         // ----- Adjeust Short Range velocity ----------
 
