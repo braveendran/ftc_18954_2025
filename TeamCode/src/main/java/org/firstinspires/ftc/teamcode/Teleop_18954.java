@@ -73,7 +73,7 @@ public class Teleop_18954 extends OpMode {
 
     CommonCamera_18954 mCameraRef;
 
-    private final boolean ENABLE_CAMERA_DEFINE=false;
+    private final boolean ENABLE_CAMERA_DEFINE=true;
 
 
 

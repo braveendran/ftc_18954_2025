@@ -95,7 +95,7 @@ public class CommonFunc_18954 {
 
     public void StartShooter(double LauncherPower, double BallPusherVelocity) {
         launcherMotor.setPower(LauncherPower);
-        ballPusherMotor.setVelocity(BallPusherVelocity);
+        ballPusherMotor.setVelocity(3200);
         bShooterRunning=true;
     }
     /**
@@ -109,7 +109,7 @@ public class CommonFunc_18954 {
         if(!bShooterRunning) {
             launcherMotor.setPower(LauncherPower);
 
-            ballPusherMotor.setVelocity(BallPusherVelocity);
+            ballPusherMotor.setVelocity(3200);
 
             opMode.sleep(INITIAL_SPIN_UP_TIME); // Wait 1.2 seconds for the motor to reach full speed
         }

@@ -49,13 +49,14 @@ public class AutonBlueClose extends LinearOpMode {
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
 
-        objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
+        //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
         objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,48, 10);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,50, 10);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,55, 10);
 
 
         telemetry.addData("Autonomous", "Complete");
