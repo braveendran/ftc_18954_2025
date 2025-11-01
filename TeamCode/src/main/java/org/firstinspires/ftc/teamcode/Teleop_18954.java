@@ -40,6 +40,17 @@ public class Teleop_18954 extends OpMode {
     private final double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.98;
 
     private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.80;
+    private final double LAUNCHER_SHORT_RANGE_MIN=0.60;
+    private final double LAUNCHER_SHORT_RANGE_MAX=0.93;
+
+    private boolean LAUNCHER_ADJUST_ACTIVE=false;
+    private long LAUNCHER_LAST_ADJUST_TIME=0;
+    private final double LAUNCHER_ADJUST_HYSTERISIS=500;
+    private final double LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE=0.01;
+
+
+
+
 
     // ---------------- STOPPER SETTINGS ----------------
     private final double STOPPER_CLOSED = 0.70;
@@ -60,9 +71,15 @@ public class Teleop_18954 extends OpMode {
 
     CommonCamera_18954 mCameraRef;
 
+    private final boolean ENABLE_CAMERA_DEFINE=false;
+
+
+
     // ---------------- INIT METHOD ----------------
     @Override
     public void init() {
+
+
         // Hardware mapping
         leftFront = hardwareMap.dcMotor.get("FrontLeft");
         rightFront = hardwareMap.dcMotor.get("FrontRight");
@@ -98,7 +115,9 @@ public class Teleop_18954 extends OpMode {
         // Stopper initial position
         stopperServo.setPosition(STOPPER_CLOSED);
 
-        mCameraRef=new CommonCamera_18954(this);
+        if(ENABLE_CAMERA_DEFINE) {
+            mCameraRef = new CommonCamera_18954(this);
+        }
 
 
         telemetry.addData("Status", "Initialized");
@@ -108,8 +127,12 @@ public class Teleop_18954 extends OpMode {
     @Override
     public void loop() {
 
+        Pose3D pose;
+
         //----------------- CAMERA Feedback -----------------
-        Pose3D pose=mCameraRef.telemetryAprilTag(isBlueTeam);
+        if(ENABLE_CAMERA_DEFINE) {
+            pose = mCameraRef.telemetryAprilTag();
+        }
 
 
         // ---------------- DRIVE CONTROL ----------------
@@ -157,7 +180,7 @@ public class Teleop_18954 extends OpMode {
                 break;
 
             case FEED_OPEN:
-                if (System.currentTimeMillis() - stateStartTime >= GATE_DOWN_TIME) { // 0.5 sec open
+                if (System.currentTimeMillis() - stateStartTime >= GATE_UP_TIME) { // 0.5 sec open
                     shooterState = ShooterState.FEED_CLOSE;
                     stateStartTime = System.currentTimeMillis();
                     stopperOpen = false;
@@ -165,7 +188,7 @@ public class Teleop_18954 extends OpMode {
                 break;
 
             case FEED_CLOSE:
-                if (System.currentTimeMillis() - stateStartTime >= GATE_UP_TIME) { // 0.5 sec close
+                if (System.currentTimeMillis() - stateStartTime >= GATE_DOWN_TIME) { // 0.5 sec close
                     if (!gamepad2.dpad_down) {
                         shooterState = ShooterState.FEED_OPEN;
                         stateStartTime = System.currentTimeMillis();
@@ -180,20 +203,44 @@ public class Teleop_18954 extends OpMode {
                 break;
         }
 
-        // ---------------- BALL PUSHER ----------------
-        ballPusherOn = (shooterState != ShooterState.IDLE) || (gamepad1.right_trigger > 0.1);
-        ballPusherMotor.setPower(ballPusherOn ? 1.0 : 0.0);
-
         // ---------------- INTAKE ----------------
-        intakeOn = (gamepad1.right_trigger > 0.1);
+        intakeOn = gamepad1.right_bumper;
         intakeMotor.setPower(intakeOn ? 1.0 : 0.0);
 
-        // ---------------- LAUNCHER CONTROL ----------------
-        if (shooterState == ShooterState.IDLE) {
-            launcherOn = gamepad2.right_trigger > 1;
-            shortRangeMode = false;
+        // ---------------- BALL PUSHER ----------------
+        ballPusherOn = (shooterState != ShooterState.IDLE) || intakeOn;
+        ballPusherMotor.setPower(ballPusherOn ? 1.0 : 0.0);
+
+        // ----- Adjeust Short Range velocity ----------
+
+
+        if(LAUNCHER_ADJUST_ACTIVE) {
+            if (System.currentTimeMillis() - LAUNCHER_LAST_ADJUST_TIME > LAUNCHER_ADJUST_HYSTERISIS) {
+                LAUNCHER_ADJUST_ACTIVE = false;
+            }
+        }
+        if(!LAUNCHER_ADJUST_ACTIVE) {
+            if (gamepad2.right_bumper) {
+                LAUNCHER_SHORT_RANGE_VELOCITY += LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE;
+                LAUNCHER_ADJUST_ACTIVE = true;
+                LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
+            } else if (gamepad2.left_bumper) {
+                LAUNCHER_SHORT_RANGE_VELOCITY -= LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE;
+                LAUNCHER_ADJUST_ACTIVE = true;
+                LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
+            }
+
+
+            if (LAUNCHER_SHORT_RANGE_VELOCITY > LAUNCHER_SHORT_RANGE_MAX) {
+                LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MAX;
+            } else if (LAUNCHER_SHORT_RANGE_VELOCITY < LAUNCHER_SHORT_RANGE_MIN) {
+                LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MIN;
+            }
         }
 
+
+
+        // ---------------- LAUNCHER CONTROL ----------------
         if (launcherOn) {
             double powertoset = shortRangeMode ? LAUNCHER_SHORT_RANGE_VELOCITY : LAUNCHER_LONG_RANGE_VELOCITY;
 			launcherMotor.setPower(powertoset);
@@ -202,14 +249,6 @@ public class Teleop_18954 extends OpMode {
                 launcherMotor.setPower(0);
         }
 
-        // ---------------- STOPPER CONTROL ----------------
-        if (shooterState == ShooterState.IDLE) {
-            if (gamepad2.right_bumper) {
-                stopperOpen = true;
-            } else if (gamepad2.left_bumper) {
-                stopperOpen = false;
-            }
-        }
 
         stopperServo.setPosition(stopperOpen ? STOPPER_OPEN : STOPPER_CLOSED);
 
@@ -224,13 +263,16 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
         telemetry.addData("Shooter State", shooterState.toString());
 
-        if(pose!=null) {
-            telemetry.addData("X", pose.getPosition().x);
-            telemetry.addData("Y",  pose.getPosition().y);
-            telemetry.addData("Z",  pose.getPosition().z);
-            telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
-            telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
-            telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+        if(ENABLE_CAMERA_DEFINE) {
+
+            if (pose != null) {
+                telemetry.addData("X", pose.getPosition().x);
+                telemetry.addData("Y", pose.getPosition().y);
+                telemetry.addData("Z", pose.getPosition().z);
+                telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
+                telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+                telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+            }
         }
 
         telemetry.update();

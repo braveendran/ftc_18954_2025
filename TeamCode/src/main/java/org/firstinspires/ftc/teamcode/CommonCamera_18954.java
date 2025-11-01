@@ -24,8 +24,8 @@ public class CommonCamera_18954 {
     private static final int RED_TAG_ID = 24;
     private static final int BLUE_TAG_ID = 20;
 
-    private Position Coordinates_RedCenter = new Position(DistanceUnit.INCH,-58.3727, 55.6425, 29.5);
-    private Position Coordinates_BlueCenter = new Position (DistanceUnit.INCH,-58.3727, -55.6425, 29.5);
+    private Position Coordinates_RedCenter = new Position(DistanceUnit.INCH,-58.3727, 55.6425, 29.5,0);
+    private Position Coordinates_BlueCenter = new Position (DistanceUnit.INCH,-58.3727, -55.6425, 29.5,0);
 
 
     private Position cameraPosition = new Position(DistanceUnit.INCH,
@@ -139,12 +139,12 @@ public class CommonCamera_18954 {
 
 
     public void GetMoveInstructions(boolean IsBlueTeam , CommonFunc_18954 robotFunc) {
-        Pose3D pose=null;
+        Pose3D pose = null;
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         this.mOpeModeRef.telemetry.addData("# AprilTags Detected", currentDetections.size());
 
         Position targetCoordinates = null;
-        if(IsBlueTeam){
+        if (IsBlueTeam) {
             targetCoordinates = Coordinates_BlueCenter;
         } else {
             targetCoordinates = Coordinates_RedCenter;
@@ -159,7 +159,7 @@ public class CommonCamera_18954 {
                     if ((detection.id == BLUE_TAG_ID)) {
                         pose = detection.robotPose;
                     }
-                    if ((detection.id == RED_TAG_ID) ) {
+                    if ((detection.id == RED_TAG_ID)) {
                         pose = detection.robotPose;
                     }
 
@@ -167,11 +167,11 @@ public class CommonCamera_18954 {
             }
         }
 
-        if(pose != null){
+        if (pose != null) {
             Position tagPosition = pose.getPosition();
-            double deltaX = targetCoordinates.getX(DistanceUnit.INCH) - tagPosition.getX(DistanceUnit.INCH);
-            double deltaY = targetCoordinates.getY(DistanceUnit.INCH) - tagPosition.getY(DistanceUnit.INCH);
-            double deltaZ = targetCoordinates.getZ(DistanceUnit.INCH) - tagPosition.getZ(DistanceUnit.INCH);
+            double deltaX = targetCoordinates.x - tagPosition.x;
+            double deltaY = targetCoordinates.y - tagPosition.y;
+            double deltaZ = targetCoordinates.z - tagPosition.z;
 
             this.mOpeModeRef.telemetry.addData("Delta X (in): ", "%.2f", deltaX);
             this.mOpeModeRef.telemetry.addData("Delta Y (in): ", "%.2f", deltaY);
@@ -179,10 +179,11 @@ public class CommonCamera_18954 {
         } else {
             this.mOpeModeRef.telemetry.addData("No valid tag detected for team ", IsBlueTeam ? "Blue" : "Red");
         }
-
-        robotFunc.encoderDrive
-        
     }
+
+
+        
+}
 
 
 
