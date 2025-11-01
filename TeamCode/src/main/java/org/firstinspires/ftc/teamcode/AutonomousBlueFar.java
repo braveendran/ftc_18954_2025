@@ -39,7 +39,7 @@ public class AutonomousBlueFar extends LinearOpMode {
         // Step 3: Shoot one Power Core into the high goal.
         objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_POWER,false,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.turn(params.TURN_SPEED, 55, 4.0*2);
+        objCommonFunc.turn(params.TURN_SPEED, 90, 4.0*2);
 
         objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW, 18,  5.0*2);
         
@@ -52,11 +52,12 @@ public class AutonomousBlueFar extends LinearOpMode {
 
         objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, 18, 5.0*2);
 
-        objCommonFunc.turn(params.TURN_SPEED, -55, 4.0*2);
+        objCommonFunc.turn(params.TURN_SPEED, -90, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_POWER,false,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
 
+        objCommonFunc.turn(params.TURN_SPEED, 90, 4.0*2);
         //Move out of the shooting
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 18, 18, 5.0*2);
 
