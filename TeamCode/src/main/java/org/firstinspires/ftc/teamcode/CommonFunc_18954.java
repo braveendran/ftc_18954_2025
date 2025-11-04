@@ -22,12 +22,19 @@ public class CommonFunc_18954 {
 
     boolean bShooterRunning=false;
 
+    //Encoder calculations
     static final double COUNTS_PER_MOTOR_REV = 537.7; // Example for a goBILDA 5203 series motor
     static final double DRIVE_GEAR_REDUCTION = 1.0;
     static final double WHEEL_DIAMETER_INCHES = 4.0;
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) / (WHEEL_DIAMETER_INCHES * 3.1415);
 
+    //Launcher RPM calculation
     private final double LAUNCHER_MOTOR_TICKS_PER_REV = 28.0;
+
+    private double LAUNCHER_CurrentPower=0.85;
+    private long LAUNCHER_TargetRpm=4200L;
+    private double LAUNCHER_PowerIncrement=0.1;
+    private double LAUNCHER_RpmTolerance=50;
 
 
 
@@ -40,6 +47,10 @@ public class CommonFunc_18954 {
 
     private final double STOPPER_CLOSED = 0.70;
     private final double STOPPER_OPEN = .94;
+
+    
+
+
 
 
 
@@ -95,54 +106,83 @@ public class CommonFunc_18954 {
         telemetry.update();
     }
 
-    public void StartShooter(double LauncherPower, double BallPusherVelocity) {
-        launcherMotor.setPower(LauncherPower);
-        ballPusherMotor.setVelocity(3200);
+    public void StartShooter(long TargetRpm,long  BallPusherPower, double LauncherStartingPower) {
+
+        this.LAUNCHER_CurrentPower=LauncherStartingPower;
+
+        //Set the launcher to target RPM
+        this.LAUNCHER_TargetRpm=TargetRpm;
+        setLauncherPowerForTargetRPM(this.LAUNCHER_TargetRpm);
+
+        //start the ball pusher motor
+        ballPusherMotor.setPower(BallPusherPower);
         bShooterRunning=true;
     }
+    
     /**
      * A self-contained function to shoot 3 Power Core.
      */
-    public void shootPowerCore(double LauncherPower,boolean unused ,double BallPusherVelocity) {
+    public void shootPowerCore(long TargetRpm,double BallPusherPower) {
         //telemetry.addData("Shooter", "Starting sequence...");
         //telemetry.update();
 
+        private double LAUNCHER_CurrentRpm;
+        private long gatedown_start;
+        private long gateup_start;
+
         // Spin up the launcher motor
         if(!bShooterRunning) {
-            launcherMotor.setPower(LauncherPower);
-
-            ballPusherMotor.setVelocity(3200);
-
-            opMode.sleep(INITIAL_SPIN_UP_TIME); // Wait 1.2 seconds for the motor to reach full speed
+            StartShooter(TargetRpm,BallPusherPower);
         }
 
-        for (int i=0;i<4;i++) {
-            // Open the stopper to feed the Power Core
-            stopperServo.setPosition(STOPPER_OPEN);
-            opMode.sleep(GATE_DOWN_TIME); // Wait 0.5 seconds for the core to pass
+        for (int i=0;i<3;i++) {
+            // Wait for the launcher to reach the target RPM
+            while ((getLauncherRpm() < this.LAUNCHER_TargetRpm + this.LAUNCHER_RpmTolerance ) &&
+             (getLauncherRpm() > this.LAUNCHER_TargetRpm - this.LAUNCHER_RpmTolerance ) && 
+                     && opMode.opModeIsActive()
+                ) {                     
+                
+                setLauncherPowerForTargetRPM(this.LAUNCHER_TargetRpm);
+                opMode.sleep(MINIMAL_SLEEP_TIME);
+            }
 
-            // Close the stopper and turn off the launcher
+            // Open the stopper to feed the ball
+            stopperServo.setPosition(STOPPER_OPEN);
+
+            //wait for a minimum of the GateDownTime : 
+            gatedown_start = System.currentTimeMillis();
+            if(System.currentTimeMillis() - (gatedown_start < GATE_DOWN_TIME) {
+                opMode.sleep(MINIMAL_SLEEP_TIME);
+                setLauncherPowerForTargetRPM(this.LAUNCHER_TargetRpm);
+            }
+
+            // Close the stopper to stop feeding            
             stopperServo.setPosition(STOPPER_CLOSED);
-            opMode.sleep(GATE_UP_TIME);
+            gateup_start = System.currentTimeMillis();
+            if(System.currentTimeMillis() - gateup_start < GATE_UP_TIME) {
+                opMode.sleep(MINIMAL_SLEEP_TIME);
+                setLauncherPowerForTargetRPM(this.LAUNCHER_TargetRpm);
+            }          
+            
         }
 
         launcherMotor.setPower(0);
-        ballPusherMotor.setVelocity(0);
+        ballPusherMotor.setPower(0);
 
         bShooterRunning=false;
 
     }
 
-    public void TurnOnIntake(double IntakeVelocity,double BallPusherVelocity)
+    public void TurnOnIntake(double InTakePower,double BallPusherPower)
     {
-        intakeMotor.setVelocity(IntakeVelocity);
-        ballPusherMotor.setVelocity(BallPusherVelocity);
+        intakeMotor.setPower(InTakePower);
+        ballPusherMotor.setPower(BallPusherPower);
     }
 
     public void TurnOffIntake()
     {
-        intakeMotor.setVelocity(0);
-        ballPusherMotor.setVelocity(0);
+        intakeMotor.setPower(0);
+        ballPusherMotor.setPower(0);
     }
 
 
@@ -220,17 +260,31 @@ public class CommonFunc_18954 {
     }
 
     /**
-     * Method to turn the robot. A positive angle turns left.
+     * Method to turn the robot. A positive angle turns left (counterclockwise).
+     * Turns around the center of the four wheels using the actual wheelbase and track width.
      */
     public void turn(double speed, double angle, double timeoutS) {
-        // This is a simplified turn. For more accuracy, use the IMU (Gyro).
-        // The distance each wheel travels is based on the turning radius.
-        double turnRadiusInches = 9.0; // Half the distance between the wheels
-        double turnDistanceInches = (angle / 360.0) * (2 * 3.1415 * turnRadiusInches);
-        encoderDrive(speed, -turnDistanceInches, turnDistanceInches, timeoutS);
-    }
+        // Calculate the distance from center to each wheel (same for all due to symmetry)
+        double halfWheelbase = DistanceBetweenFrontAndBackWheels / 2.0;
+        double halfTrack = DistanceBetweenLeftAndRightWheels / 2.0;
+        double r = Math.sqrt(halfWheelbase * halfWheelbase + halfTrack * halfTrack);
 
-    /**
+        // Convert angle to radians
+        double thetaRad = Math.toRadians(angle);
+
+        // Arc length each wheel needs to travel
+        double turnDistanceInches = r * thetaRad;
+
+        // For positive angle (left turn, counterclockwise):
+        // Left wheels forward, right wheels backward
+        double lfInches = turnDistanceInches;
+        double rfInches = -turnDistanceInches;
+        double lbInches = turnDistanceInches;
+        double rbInches = -turnDistanceInches;
+
+        // Use the overloaded encoderDrive for individual wheel control
+        encoderDrive(speed, lfInches, rfInches, lbInches, rbInches, timeoutS);
+    }    /**
      * Overloaded encoderDrive for mecanum strafing.
      */
     public void encoderDrive(double speed, double lfInches, double rfInches, double lbInches, double rbInches, double timeoutS) {
@@ -286,6 +340,18 @@ public class CommonFunc_18954 {
         }
         // Return 0 if it's not a DcMotorEx or if something is wrong
         return 0;
+    }
+
+    private long setLauncherPowerForTargetRPM(long targetRPM)
+    {
+        // Calculate the required power to achieve the target RPM
+        double currentRPM = getLauncherRpm();
+        double powerAdjustment = (targetRPM - currentRPM) / targetRPM;
+        LAUNCHER_CurrentPower += powerAdjustment * LAUNCHER_PowerIncrement;
+        launcherMotor.setPower(LAUNCHER_CurrentPower);
+        // Implement the logic to set the launcher RPM
+        // This might involve setting the motor velocity or using a PID controller
+        return currentRPM; // Return the actual RPM set
     }
 
 }
