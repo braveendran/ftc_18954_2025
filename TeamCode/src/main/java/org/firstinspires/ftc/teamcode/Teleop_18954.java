@@ -16,7 +16,7 @@ public class Teleop_18954 extends OpMode {
 
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
-	DcMotor launcherMotor;
+	DcMotor launcherMotor, launcherBottomMotor;
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
@@ -24,8 +24,8 @@ public class Teleop_18954 extends OpMode {
 
     private CommonFunc_18954 objCommonFunc;
 
-    private long INITIAL_SPIN_UP_TIME=1300;
-    private long GATE_DOWN_TIME=500;
+    private long INITIAL_SPIN_UP_TIME=2000;
+    private long GATE_DOWN_TIME=800;
     private long GATE_UP_TIME=800;
 
     // ---------------- DRIVE SETTINGS ----------------
@@ -37,16 +37,17 @@ public class Teleop_18954 extends OpMode {
     // ---------------- LAUNCHER SETTINGS ----------------
     private final double LAUNCHER_MAX_VELOCITY = 1.0;
 
-    private double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.98;
+    private double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.89;
 
-    private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.80;
+    private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.73;
+    private final double  LAUNCHER_VELOCITY_ADJUSTER = .1;
 
-    private final double LAUNCHER_SHORTTANGE_RPM = -3700;
+    private final double LAUNCHER_SHORTTANGE_RPM = -3500;
 
-    private final double LAUNCHER_LONGRANGE_RPM = -4600;
+    private final double LAUNCHER_LONGRANGE_RPM = -4050;
 
-    private final double LAUNCHER_SHORT_RANGE_MIN=0.60;
-    private final double LAUNCHER_SHORT_RANGE_MAX=0.93;
+    private final double LAUNCHER_SHORT_RANGE_MIN=0.2;
+    private final double LAUNCHER_SHORT_RANGE_MAX=1.0;
 
     private boolean LAUNCHER_ADJUST_ACTIVE=false;
     private long LAUNCHER_LAST_ADJUST_TIME=0;
@@ -60,7 +61,7 @@ public class Teleop_18954 extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double STOPPER_CLOSED = 0.70;
+    private final double STOPPER_CLOSED = 0.7;
     private final double STOPPER_OPEN = .94;
 
     // ---------------- CONTROL FLAGS ----------------
@@ -80,9 +81,17 @@ public class Teleop_18954 extends OpMode {
 
     CommonCamera_18954 mCameraRef;
 
-    private final boolean ENABLE_CAMERA_DEFINE=true;
+    private final boolean ENABLE_CAMERA_DEFINE=false;
 
     private double Target_RPM_Shooting=0;
+
+    private double Current_Power_Shooting=0;
+    private long Current_Power_Last_Adjusted_Time=0;
+    private final long Current_Power_Adjusted_Threshold=20;
+    private final long Current_Power_Initial_Adjust_Threshold=500;
+    private long Current_Power_Initial_Adjust_Time=0;
+
+
 
 
 
@@ -98,6 +107,8 @@ public class Teleop_18954 extends OpMode {
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
+        launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
+
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         stopperServo = hardwareMap.get(Servo.class, "stopperServo");
 
@@ -108,6 +119,7 @@ public class Teleop_18954 extends OpMode {
         rightBack.setDirection(DcMotor.Direction.REVERSE);
         ballPusherMotor.setDirection(DcMotor.Direction.REVERSE);
         launcherMotor.setDirection(DcMotor.Direction.FORWARD);
+        launcherBottomMotor.setDirection(DcMotor.Direction.REVERSE);
         intakeMotor.setDirection(DcMotor.Direction.REVERSE);
 
         // Zero power behavior
@@ -117,10 +129,12 @@ public class Teleop_18954 extends OpMode {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         ballPusherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         launcherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        launcherBottomMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Launcher encoder mode
         launcherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        launcherBottomMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Stopper initial position
@@ -139,6 +153,7 @@ public class Teleop_18954 extends OpMode {
     public void loop() {
 
         Pose3D pose;
+        double diff_percent=0;
 
         //----------------- CAMERA Feedback -----------------
         if(ENABLE_CAMERA_DEFINE) {
@@ -177,6 +192,14 @@ public class Teleop_18954 extends OpMode {
                     launcherOn = true;
                     stopperOpen = false;
                     shortRangeMode = shortPowerShot;
+                    Current_Power_Initial_Adjust_Time=System.currentTimeMillis();
+                    if(shortRangeMode) {
+                        Current_Power_Shooting = LAUNCHER_SHORT_RANGE_VELOCITY;
+                    }
+                    else
+                    {
+                        Current_Power_Shooting = LAUNCHER_LONG_RANGE_VELOCITY;
+                    }
                 }
                 break;
 
@@ -228,9 +251,9 @@ public class Teleop_18954 extends OpMode {
         }
 
         // ---------------- BALL PUSHER ----------------
-        ballPusherOn = (shooterState != ShooterState.IDLE) || intakeOn ;
+        ballPusherOn = launcherOn || intakeOn ;
         if(ballPusherOn == true) {
-            ballPusherMotor.setPower(1.0);
+            ballPusherMotor.setPower(0);
         }
         else if(intake_spitout == true) {
             ballPusherMotor.setPower(-0.4);
@@ -243,29 +266,29 @@ public class Teleop_18954 extends OpMode {
         // ----- Adjeust Short Range velocity ----------
 
 
-        if(LAUNCHER_ADJUST_ACTIVE) {
-            if (System.currentTimeMillis() - LAUNCHER_LAST_ADJUST_TIME > LAUNCHER_ADJUST_HYSTERISIS) {
-                LAUNCHER_ADJUST_ACTIVE = false;
-            }
-        }
-        if(!LAUNCHER_ADJUST_ACTIVE) {
-            if (gamepad2.right_bumper) {
-                LAUNCHER_SHORT_RANGE_VELOCITY += LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE;
-                LAUNCHER_ADJUST_ACTIVE = true;
-                LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-            } else if (gamepad2.left_bumper) {
-                LAUNCHER_SHORT_RANGE_VELOCITY -= LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE;
-                LAUNCHER_ADJUST_ACTIVE = true;
-                LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-            }
-
-
-            if (LAUNCHER_SHORT_RANGE_VELOCITY > LAUNCHER_SHORT_RANGE_MAX) {
-                LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MAX;
-            } else if (LAUNCHER_SHORT_RANGE_VELOCITY < LAUNCHER_SHORT_RANGE_MIN) {
-                LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MIN;
-            }
-        }
+//        if(LAUNCHER_ADJUST_ACTIVE) {
+//            if (System.currentTimeMillis() - LAUNCHER_LAST_ADJUST_TIME > LAUNCHER_ADJUST_HYSTERISIS) {
+//                LAUNCHER_ADJUST_ACTIVE = false;
+//            }
+//        }
+//        if(!LAUNCHER_ADJUST_ACTIVE) {
+//            if (gamepad2.right_bumper) {
+//                LAUNCHER_SHORT_RANGE_VELOCITY += LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE;
+//                LAUNCHER_ADJUST_ACTIVE = true;
+//                LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
+//            } else if (gamepad2.left_bumper) {
+//                LAUNCHER_SHORT_RANGE_VELOCITY -= LAUNCHER_SHORT_RANGE_ASJUSTMENT_VALUE;
+//                LAUNCHER_ADJUST_ACTIVE = true;
+//                LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
+//            }
+//
+//
+//            if (LAUNCHER_SHORT_RANGE_VELOCITY > LAUNCHER_SHORT_RANGE_MAX) {
+//                LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MAX;
+//            } else if (LAUNCHER_SHORT_RANGE_VELOCITY < LAUNCHER_SHORT_RANGE_MIN) {
+//                LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MIN;
+//            }
+//        }
 
 
 
@@ -276,59 +299,47 @@ public class Teleop_18954 extends OpMode {
 
         if (launcherOn) {
             double powertoset;
-            if(shortRangeMode)
-            {
-                Target_RPM_Shooting=LAUNCHER_SHORTTANGE_RPM;
+            double current_launcher_rpm;
 
-                if(getLauncherRpm() > Target_RPM_Shooting)
-                {
-                    LAUNCHER_SHORT_RANGE_VELOCITY +=0.1;
-                }
-                else
-                {
-                    LAUNCHER_SHORT_RANGE_VELOCITY-=0.1;
-                }
-
-
-
-                if (LAUNCHER_SHORT_RANGE_VELOCITY > LAUNCHER_SHORT_RANGE_MAX) {
-                    LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MAX;
-                } else if (LAUNCHER_SHORT_RANGE_VELOCITY < LAUNCHER_SHORT_RANGE_MIN) {
-                    LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_SHORT_RANGE_MIN;
-                }
-
-                powertoset=LAUNCHER_SHORT_RANGE_VELOCITY;
-
-            }
-            else {
-                Target_RPM_Shooting=LAUNCHER_LONGRANGE_RPM;
-
-                if(getLauncherRpm() > Target_RPM_Shooting)
-                {
-                    LAUNCHER_LONG_RANGE_VELOCITY +=0.1;
-                }
-                else
-                {
-                    LAUNCHER_LONG_RANGE_VELOCITY-=0.1;
-                }
-
-
-                if (LAUNCHER_LONG_RANGE_VELOCITY > 1.0) {
-                    LAUNCHER_LONG_RANGE_VELOCITY = 1.0;
-                } else if (LAUNCHER_LONG_RANGE_VELOCITY < 0.8) {
-                    LAUNCHER_LONG_RANGE_VELOCITY = 0.8;
-                }
-
-                powertoset=LAUNCHER_LONG_RANGE_VELOCITY;
+            if (shortRangeMode) {
+                Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
+            } else {
+                Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
             }
 
+            current_launcher_rpm = getLauncherRpm();
+            diff_percent = Math.abs(current_launcher_rpm - Target_RPM_Shooting) / Math.abs(Target_RPM_Shooting);
+
+
+            if (System.currentTimeMillis() - Current_Power_Initial_Adjust_Time > Current_Power_Initial_Adjust_Threshold) {
+                if (System.currentTimeMillis() - Current_Power_Last_Adjusted_Time > Current_Power_Adjusted_Threshold) {
+                    if (getLauncherRpm() > Target_RPM_Shooting) {
+                        Current_Power_Shooting += (LAUNCHER_VELOCITY_ADJUSTER * diff_percent);
+                        powertoset = Current_Power_Shooting;
+                    } else {
+                        Current_Power_Shooting -= (LAUNCHER_VELOCITY_ADJUSTER * diff_percent);
+                        powertoset = Current_Power_Shooting;
+                    }
+                    Current_Power_Last_Adjusted_Time = System.currentTimeMillis();
+                }
+            }
+
+                if (Current_Power_Shooting > 1.0) {
+                    Current_Power_Shooting = 1.0;
+                } else if (Current_Power_Shooting < 0.1) {
+                    Current_Power_Shooting = 0.1;
+                }
 
 
 
-			launcherMotor.setPower(powertoset);
+
+
+			launcherMotor.setPower(Current_Power_Shooting);
+            launcherBottomMotor.setPower(Current_Power_Shooting);
                 
         } else {
                 launcherMotor.setPower(0);
+            launcherBottomMotor.setPower(0);
         }
 
 
@@ -340,11 +351,11 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
         telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
         telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
-        telemetry.addData("Long Range Power ", LAUNCHER_LONG_RANGE_VELOCITY);
-        telemetry.addData("Short Range Power", LAUNCHER_SHORT_RANGE_VELOCITY);
         telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
         telemetry.addData("Shooter State", shooterState.toString());
         telemetry.addData("Launcher RPM",getLauncherRpm());
+        telemetry.addData("CurrentPower",Current_Power_Shooting);
+        telemetry.addData("Differential",diff_percent);
 
         if(ENABLE_CAMERA_DEFINE) {
 

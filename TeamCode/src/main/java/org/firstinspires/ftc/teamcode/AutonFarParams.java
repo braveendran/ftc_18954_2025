@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode;
 public class AutonFarParams {
 
     public final double LAUNCHER_MAX_POWER = 1.0;
-    public final double LAUNCHER_BACKSHOOT_POWER = LAUNCHER_MAX_POWER*.99;
+    public final double LAUNCHER_BACKSHOOT_POWER = LAUNCHER_MAX_POWER*.97;
 
 
     public final double BALLPUSHER_MAX_VELOCITY =3200;
