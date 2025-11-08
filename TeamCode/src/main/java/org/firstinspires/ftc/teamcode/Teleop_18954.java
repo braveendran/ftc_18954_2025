@@ -25,7 +25,7 @@ public class Teleop_18954 extends OpMode {
     private CommonFunc_18954 objCommonFunc;
 
     private long INITIAL_SPIN_UP_TIME=2000;
-    private long GATE_DOWN_TIME=800;
+    private long GATE_DOWN_TIME=500;
     private long GATE_UP_TIME=800;
 
     // ---------------- DRIVE SETTINGS ----------------
@@ -37,14 +37,17 @@ public class Teleop_18954 extends OpMode {
     // ---------------- LAUNCHER SETTINGS ----------------
     private final double LAUNCHER_MAX_VELOCITY = 1.0;
 
-    private double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.89;
+    private double LAUNCHER_LONG_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY*.75;
 
-    private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.73;
-    private final double  LAUNCHER_VELOCITY_ADJUSTER = .1;
+    private double LAUNCHER_SHORT_RANGE_VELOCITY = LAUNCHER_MAX_VELOCITY * 0.65;
+    private final double  LAUNCHER_VELOCITY_ADJUSTER = .12;
 
-    private final double LAUNCHER_SHORTTANGE_RPM = -3500;
 
-    private final double LAUNCHER_LONGRANGE_RPM = -4050;
+    private final double LAUNCHER_SHORTTANGE_RPM = -3000;
+
+    private final double LAUNCHER_LONGRANGE_RPM = -3550;
+
+    private final double LAUNCHER_BACK_RATIO=1.2;
 
     private final double LAUNCHER_SHORT_RANGE_MIN=0.2;
     private final double LAUNCHER_SHORT_RANGE_MAX=1.0;
@@ -61,7 +64,7 @@ public class Teleop_18954 extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double STOPPER_CLOSED = 0.7;
+    private final double STOPPER_CLOSED = 0.6;
     private final double STOPPER_OPEN = .94;
 
     // ---------------- CONTROL FLAGS ----------------
@@ -107,7 +110,7 @@ public class Teleop_18954 extends OpMode {
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
-        launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
+        //launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
 
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         stopperServo = hardwareMap.get(Servo.class, "stopperServo");
@@ -118,8 +121,8 @@ public class Teleop_18954 extends OpMode {
         leftBack.setDirection(DcMotor.Direction.FORWARD);
         rightBack.setDirection(DcMotor.Direction.REVERSE);
         ballPusherMotor.setDirection(DcMotor.Direction.REVERSE);
-        launcherMotor.setDirection(DcMotor.Direction.FORWARD);
-        launcherBottomMotor.setDirection(DcMotor.Direction.REVERSE);
+        launcherMotor.setDirection(DcMotor.Direction.REVERSE);
+        //launcherBottomMotor.setDirection(DcMotor.Direction.REVERSE);
         intakeMotor.setDirection(DcMotor.Direction.REVERSE);
 
         // Zero power behavior
@@ -129,12 +132,12 @@ public class Teleop_18954 extends OpMode {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         ballPusherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         launcherMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        launcherBottomMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        //launcherBottomMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Launcher encoder mode
         launcherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        launcherBottomMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //launcherBottomMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Stopper initial position
@@ -253,7 +256,7 @@ public class Teleop_18954 extends OpMode {
         // ---------------- BALL PUSHER ----------------
         ballPusherOn = launcherOn || intakeOn ;
         if(ballPusherOn == true) {
-            ballPusherMotor.setPower(0);
+            ballPusherMotor.setPower(1.0);
         }
         else if(intake_spitout == true) {
             ballPusherMotor.setPower(-0.4);
@@ -335,11 +338,11 @@ public class Teleop_18954 extends OpMode {
 
 
 			launcherMotor.setPower(Current_Power_Shooting);
-            launcherBottomMotor.setPower(Current_Power_Shooting);
+            //launcherBottomMotor.setPower(Current_Power_Shooting*LAUNCHER_BACK_RATIO);
                 
         } else {
                 launcherMotor.setPower(0);
-            launcherBottomMotor.setPower(0);
+            //launcherBottomMotor.setPower(0);
         }
 
 
