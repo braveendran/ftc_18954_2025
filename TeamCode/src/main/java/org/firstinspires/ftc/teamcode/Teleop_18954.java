@@ -266,7 +266,8 @@ public class Teleop_18954 extends OpMode {
                             stateStartTime = System.currentTimeMillis();
                             shooterState = ShooterState.SHOOTING;
                         }
-                        else if(gateClosedForBall && ForceShoot_WithoutRPM)
+                        //Todo: Remove shortRangeMode check when we have more power
+                        else if(gateClosedForBall && (ForceShoot_WithoutRPM || !shortRangeMode))
                          {
                             //open the gate
                             gateClosedForBall = false;
