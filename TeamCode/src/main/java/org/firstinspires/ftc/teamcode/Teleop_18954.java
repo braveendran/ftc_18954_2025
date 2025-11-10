@@ -41,7 +41,7 @@ public class Teleop_18954 extends OpMode {
     private double LAUNCHER_SHORT_RANGE_POWER = LAUNCHER_MAX_POWER * 0.62;
 
     private final double  LAUNCHER_POWER_ADJUSTER = .03;
-    private long LAUNCHER_SHORTTANGE_RPM = 3400;
+    private long LAUNCHER_SHORTTANGE_RPM = 3600;
     private long LAUNCHER_LONGRANGE_RPM = 4500;
     private final long LAUNCHER_RPM_TOLERANCE = 200;
 
@@ -67,7 +67,7 @@ public class Teleop_18954 extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double GATE_CLOSED_POS = 0.5;
+    private final double GATE_CLOSED_POS = 0.65;
     private final double GATE_OPENED_POS = .94;
 
     // ---------------- CONTROL FLAGS ----------------
