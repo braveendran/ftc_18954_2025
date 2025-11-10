@@ -31,14 +31,14 @@ public class CommonFunc_18954 {
 
 
 
-    long INITIAL_SPIN_UP_TIME=1300;
+    long INITIAL_SPIN_UP_TIME=1200;
     long GATE_DOWN_TIME=500;
-    long GATE_UP_TIME=800;
+    long GATE_UP_TIME=500;
 
     long MINIMAL_SLEEP_TIME=1;
 
 
-    private final double STOPPER_CLOSED = 0.70;
+    private final double STOPPER_CLOSED = 0.65;
     private final double STOPPER_OPEN = .94;
 
 
@@ -71,7 +71,7 @@ public class CommonFunc_18954 {
         rightBack.setDirection(DcMotor.Direction.FORWARD);
 
         ballPusherMotor.setDirection(DcMotor.Direction.REVERSE);
-        launcherMotor.setDirection(DcMotor.Direction.FORWARD);
+        launcherMotor.setDirection(DcMotor.Direction.REVERSE);
         intakeMotor.setDirection(DcMotor.Direction.REVERSE);
 
         // Reset encoders and set motor modes
@@ -96,6 +96,7 @@ public class CommonFunc_18954 {
     }
 
     public void StartShooter(double LauncherPower, double BallPusherVelocity) {
+        intakeMotor.setVelocity(3200);
         launcherMotor.setPower(LauncherPower);
         ballPusherMotor.setVelocity(3200);
         bShooterRunning=true;
@@ -109,10 +110,7 @@ public class CommonFunc_18954 {
 
         // Spin up the launcher motor
         if(!bShooterRunning) {
-            launcherMotor.setPower(LauncherPower);
-
-            ballPusherMotor.setVelocity(3200);
-
+            StartShooter(LauncherPower,BallPusherVelocity);
             opMode.sleep(INITIAL_SPIN_UP_TIME); // Wait 1.2 seconds for the motor to reach full speed
         }
 
