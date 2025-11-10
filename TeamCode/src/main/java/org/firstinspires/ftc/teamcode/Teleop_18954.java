@@ -25,8 +25,8 @@ public class Teleop_18954 extends OpMode {
     private CommonFunc_18954 objCommonFunc;
 
     private long INITIAL_SPIN_UP_TIME=2000;
-    private long GATE_DOWN_TIME=500;
-    private long GATE_UP_TIME=800;
+    private long GATE_OPEN_TIME=500;
+    private long GATE_CLOSED_TIME=800;
 
     // ---------------- DRIVE SETTINGS ----------------
     private final double LOW_SPEED = 0.5;
@@ -64,8 +64,8 @@ public class Teleop_18954 extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double STOPPER_CLOSED = 0.6;
-    private final double STOPPER_OPEN = .94;
+    private final double GATE_CLOSED_POS = 0.6;
+    private final double GATE_OPENED_POS = .94;
 
     // ---------------- CONTROL FLAGS ----------------
     private boolean launcherOn = false;
@@ -73,10 +73,10 @@ public class Teleop_18954 extends OpMode {
     public boolean intake_spitout=false;
     private boolean intakeOn = false;
     private boolean ballPusherOn = false;
-    private boolean stopperOpen = false;
+    private boolean gateClosedForBall = true;
 
     private enum ShooterState {
-        IDLE, STARTING, FEED_OPEN, FEED_CLOSE
+        IDLE, STARTING, GATE_OPEN, GATE_CLOSE
     }
     private ShooterState shooterState = ShooterState.IDLE;
     private long stateStartTime = 0;
@@ -141,7 +141,7 @@ public class Teleop_18954 extends OpMode {
         //launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Stopper initial position
-        stopperServo.setPosition(STOPPER_CLOSED);
+        stopperServo.setPosition(GATE_CLOSED_POS);
 
         if(ENABLE_CAMERA_DEFINE) {
             mCameraRef = new CommonCamera_18954(this);
@@ -193,7 +193,7 @@ public class Teleop_18954 extends OpMode {
                     shooterState = ShooterState.STARTING;
                     stateStartTime = System.currentTimeMillis();
                     launcherOn = true;
-                    stopperOpen = false;
+                    gateClosedForBall = true;
                     shortRangeMode = shortPowerShot;
                     Current_Power_Initial_Adjust_Time=System.currentTimeMillis();
                     if(shortRangeMode) {
@@ -210,31 +210,42 @@ public class Teleop_18954 extends OpMode {
 
             case STARTING:
                 if (System.currentTimeMillis() - stateStartTime >= INITIAL_SPIN_UP_TIME) { // spin-up time
-                    shooterState = ShooterState.FEED_OPEN;
+                    shooterState = ShooterState.GATE_CLOSE;
                     stateStartTime = System.currentTimeMillis();
-                    stopperOpen = true;
+                    gateClosedForBall = true;
                 }
                 break;
 
-            case FEED_OPEN:
-                if (System.currentTimeMillis() - stateStartTime >= GATE_UP_TIME) { // 0.5 sec open
-                    shooterState = ShooterState.FEED_CLOSE;
-                    stateStartTime = System.currentTimeMillis();
-                    stopperOpen = false;
+                //gate down
+            case GATE_CLOSE:
+                if (gamepad2.dpad_down) {
+                    shooterState = ShooterState.IDLE;
+                    launcherOn = false;
+                    gateClosedForBall = true;
+                    shortRangeMode = false;
                 }
-                break;
-
-            case FEED_CLOSE:
-                if (System.currentTimeMillis() - stateStartTime >= GATE_DOWN_TIME) { // 0.5 sec close
-                    if (!gamepad2.dpad_down) {
-                        shooterState = ShooterState.FEED_OPEN;
+                else {
+                    if (System.currentTimeMillis() - stateStartTime >= GATE_CLOSED_TIME) { // 0.5 sec open
+                        shooterState = ShooterState.GATE_OPEN;
                         stateStartTime = System.currentTimeMillis();
-                        stopperOpen = true;
-                    } else {
-                        shooterState = ShooterState.IDLE;
-                        launcherOn = false;
-                        stopperOpen = false;
-                        shortRangeMode = false;
+                        gateClosedForBall = true;
+                    }
+                }
+                break;
+
+                //Gate Up
+            case GATE_OPEN:
+                if (gamepad2.dpad_down) {
+                    shooterState = ShooterState.IDLE;
+                    launcherOn = false;
+                    gateClosedForBall = true;
+                    shortRangeMode = false;
+                }
+                else {
+                    if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_TIME) { // 0.5 sec close
+                            shooterState = ShooterState.GATE_CLOSE;
+                            stateStartTime = System.currentTimeMillis();
+                            gateClosedForBall = false;
                     }
                 }
                 break;
@@ -256,7 +267,7 @@ public class Teleop_18954 extends OpMode {
         // ---------------- BALL PUSHER ----------------
         ballPusherOn = launcherOn || intakeOn ;
         if(ballPusherOn == true) {
-            ballPusherMotor.setPower(0.0);
+            ballPusherMotor.setPower(1.0);
         }
         else if(intake_spitout == true) {
             ballPusherMotor.setPower(-0.4);
@@ -346,11 +357,10 @@ public class Teleop_18954 extends OpMode {
         }
 
 
-        stopperServo.setPosition(stopperOpen ? STOPPER_OPEN : STOPPER_CLOSED);
-
+        stopperServo.setPosition(gateClosedForBall ? GATE_CLOSED_POS:GATE_OPENED_POS );
         // ---------------- TELEMETRY ----------------
         telemetry.addData("Speed Multiplier", String.format("%.2f", speedMultiplier));
-        telemetry.addData("Stopper", stopperOpen ? "OPEN" : "CLOSED");
+        telemetry.addData("GateClosed", gateClosedForBall ? "CLOSED" : "OPEN");
         telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
         telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
         telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
