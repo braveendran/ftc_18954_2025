@@ -47,7 +47,7 @@ public class AutonRedClose extends LinearOpMode {
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
 
-        objCommonFunc.TurnOffIntake();
+        //objCommonFunc.TurnOffIntake();
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
 
@@ -58,7 +58,7 @@ public class AutonRedClose extends LinearOpMode {
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,55, 10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,70, 10);
 
 
         telemetry.addData("Autonomous", "Complete");
