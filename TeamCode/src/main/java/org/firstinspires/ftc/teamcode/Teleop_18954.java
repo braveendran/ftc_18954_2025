@@ -37,13 +37,13 @@ public class Teleop_18954 extends OpMode {
     // ---------------- LAUNCHER SETTINGS ----------------
     private final double LAUNCHER_MAX_POWER = 1.0;
 
-    private double LAUNCHER_LONG_RANGE_POWER = LAUNCHER_MAX_POWER*.75;
+    private double LAUNCHER_LONG_RANGE_POWER = LAUNCHER_MAX_POWER;
     private double LAUNCHER_SHORT_RANGE_POWER = LAUNCHER_MAX_POWER * 0.62;
 
-    private final double  LAUNCHER_POWER_ADJUSTER = .12;
+    private final double  LAUNCHER_POWER_ADJUSTER = .03;
     private long LAUNCHER_SHORTTANGE_RPM = 3400;
-    private long LAUNCHER_LONGRANGE_RPM = 4550;
-    private final long LAUNCHER_RPM_TOLERANCE = 100;
+    private long LAUNCHER_LONGRANGE_RPM = 4500;
+    private final long LAUNCHER_RPM_TOLERANCE = 200;
 
 
     private final double LAUNCHER_BACK_RATIO=1.2;
@@ -67,7 +67,7 @@ public class Teleop_18954 extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double GATE_CLOSED_POS = 0.6;
+    private final double GATE_CLOSED_POS = 0.5;
     private final double GATE_OPENED_POS = .94;
 
     // ---------------- CONTROL FLAGS ----------------
@@ -81,7 +81,7 @@ public class Teleop_18954 extends OpMode {
     private boolean ForceShoot_WithoutRPM=false;
 
     private enum ShooterState {
-        IDLE, STARTING, GATE_OPEN, GATE_CLOSE
+        IDLE, STARTING, GATE_OPEN, GATE_CLOSE, SHOOTING , FORCED_SHOOT
     }
     private ShooterState shooterState = ShooterState.IDLE;
     private long stateStartTime = 0;
@@ -95,7 +95,7 @@ public class Teleop_18954 extends OpMode {
 
     private double Current_Power_Shooting=0;
     private long Current_Power_Last_Adjusted_Time=0;
-    private final long Current_Power_Adjusted_Threshold=30;
+    private final long Current_Power_Adjusted_Threshold=10;
     private final long Current_Power_Initial_Adjust_Threshold=500;
     private long Current_Power_Initial_Adjust_Time=0;
 
@@ -259,23 +259,36 @@ public class Teleop_18954 extends OpMode {
                             Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
                         }
 
-                        if(gateClosedForBall &&
-                                ((getLauncherRpm() - Target_RPM_Shooting <= Math.abs(Target_RPM_Shooting-LAUNCHER_RPM_TOLERANCE)) || ForceShoot_WithoutRPM)
-                        ) {
+                        if(gateClosedForBall && ( Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= ( LAUNCHER_RPM_TOLERANCE))
+                        ){
                             //open the gate
                             gateClosedForBall = false;
                             stateStartTime = System.currentTimeMillis();
+                            shooterState = ShooterState.SHOOTING;
                         }
-                        if(!gateClosedForBall) {
-                            if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_TIME) { // 0.5 sec close
-                                shooterState = ShooterState.GATE_CLOSE;
-                                stateStartTime = System.currentTimeMillis();
-                                gateClosedForBall = true;
-                            }
+                        else if(gateClosedForBall && ForceShoot_WithoutRPM)
+                         {
+                            //open the gate
+                            gateClosedForBall = false;
+                            stateStartTime = System.currentTimeMillis();
+                            shooterState = ShooterState.FORCED_SHOOT;
                         }
                 }
-
                 break;
+
+            case FORCED_SHOOT:
+            case SHOOTING:
+            {
+                if(!gateClosedForBall) {
+                    if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_TIME) { // 0.5 sec close
+                        shooterState = ShooterState.GATE_CLOSE;
+                        stateStartTime = System.currentTimeMillis();
+                        gateClosedForBall = true;
+                    }
+                }
+
+            }
+            break;
         }
 
         if(gamepad2.x) {
@@ -428,7 +441,7 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("RPM Based Shooting",!ForceShoot_WithoutRPM);
         telemetry.addData("Short Range RPM",LAUNCHER_SHORTTANGE_RPM);
         telemetry.addData("Long Range RPM",LAUNCHER_LONGRANGE_RPM);
-        telemetry.addData("RPM Adjustement",RPM_ADJUSTMENTS_ALLOWED);
+        telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
 
 
 
@@ -447,7 +460,7 @@ public class Teleop_18954 extends OpMode {
         telemetry.update();
     }
 
-    public double getLauncherRpm() {
+    public long getLauncherRpm() {
         // First, check if launcherMotor is a DcMotorEx instance to safely call getVelocity()
         if (launcherMotor instanceof DcMotorEx) {
             // getVelocity() returns the speed in "ticks per second"
@@ -455,7 +468,7 @@ public class Teleop_18954 extends OpMode {
 
             // Convert ticks per second to revolutions per minute
             // (ticks/sec) * (60 sec/min) / (ticks/rev) = rev/min
-            return (ticksPerSecond * 60) / LAUNCHER_MOTOR_TICKS_PER_REV;
+            return (long)((ticksPerSecond * 60) / LAUNCHER_MOTOR_TICKS_PER_REV);
         }
         // Return 0 if it's not a DcMotorEx or if something is wrong
         return 0;
