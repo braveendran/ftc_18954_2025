@@ -43,9 +43,9 @@ public class Teleop_18954 extends OpMode {
     private final double  LAUNCHER_VELOCITY_ADJUSTER = .12;
 
 
-    private final double LAUNCHER_SHORTTANGE_RPM = -3000;
+    private final double LAUNCHER_SHORTTANGE_RPM = 3200;
 
-    private final double LAUNCHER_LONGRANGE_RPM = -3550;
+    private final double LAUNCHER_LONGRANGE_RPM = 4550;
 
     private final double LAUNCHER_BACK_RATIO=1.2;
 
@@ -256,7 +256,7 @@ public class Teleop_18954 extends OpMode {
         // ---------------- BALL PUSHER ----------------
         ballPusherOn = launcherOn || intakeOn ;
         if(ballPusherOn == true) {
-            ballPusherMotor.setPower(1.0);
+            ballPusherMotor.setPower(0.0);
         }
         else if(intake_spitout == true) {
             ballPusherMotor.setPower(-0.4);
@@ -316,7 +316,7 @@ public class Teleop_18954 extends OpMode {
 
             if (System.currentTimeMillis() - Current_Power_Initial_Adjust_Time > Current_Power_Initial_Adjust_Threshold) {
                 if (System.currentTimeMillis() - Current_Power_Last_Adjusted_Time > Current_Power_Adjusted_Threshold) {
-                    if (getLauncherRpm() > Target_RPM_Shooting) {
+                    if (getLauncherRpm() < Target_RPM_Shooting) {
                         Current_Power_Shooting += (LAUNCHER_VELOCITY_ADJUSTER * diff_percent);
                         powertoset = Current_Power_Shooting;
                     } else {
