@@ -67,8 +67,12 @@ public class Teleop_18954 extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double GATE_CLOSED_POS = 0.65;
-    private final double GATE_OPENED_POS = .94;
+    private final double GATE_CLOSED_POS = 0.8;
+    private final double GATE_OPENED_POS = 0.2;
+
+    private double GATE_POSITION_TESTING = 0.5;
+    private boolean GATE_POSITION_TESTING_ENABLED=false;
+    private long GATE_POSITION_LASTADJUSTED_TIME=0;
 
     // ---------------- CONTROL FLAGS ----------------
     private boolean launcherOn = false;
@@ -101,7 +105,7 @@ public class Teleop_18954 extends OpMode {
 
 
 
-
+    private boolean ballPusher_StopSpinning=false;
 
 
 
@@ -227,8 +231,9 @@ public class Teleop_18954 extends OpMode {
                 break;
 
                 //gate closed
-            case GATE_CLOSE:
+            case GATE_OPEN:
                 gateClosedForBall = true;
+
                 if (gamepad2.dpad_down) {
                     shooterState = ShooterState.IDLE;
                     launcherOn = false;
@@ -237,14 +242,14 @@ public class Teleop_18954 extends OpMode {
                 }
                 else {
                     if (System.currentTimeMillis() - stateStartTime >= GATE_CLOSED_TIME) { // 0.5 sec open
-                        shooterState = ShooterState.GATE_OPEN;
+                        shooterState = ShooterState.GATE_CLOSE;
                         stateStartTime = System.currentTimeMillis();
                     }
                 }
                 break;
 
                 //Gate open
-            case GATE_OPEN:
+            case GATE_CLOSE:
 
                 if (gamepad2.dpad_down) {
                     shooterState = ShooterState.IDLE;
@@ -282,9 +287,10 @@ public class Teleop_18954 extends OpMode {
             {
                 if(!gateClosedForBall) {
                     if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_TIME) { // 0.5 sec close
-                        shooterState = ShooterState.GATE_CLOSE;
+                        shooterState = ShooterState.GATE_OPEN;
                         stateStartTime = System.currentTimeMillis();
                         gateClosedForBall = true;
+                        ballPusher_StopSpinning=true;
                     }
                 }
 
@@ -427,7 +433,23 @@ public class Teleop_18954 extends OpMode {
         }
 
 
-        stopperServo.setPosition(gateClosedForBall ? GATE_CLOSED_POS:GATE_OPENED_POS );
+
+        if(GATE_POSITION_TESTING_ENABLED == true)
+        {
+            if(System.currentTimeMillis() > GATE_POSITION_LASTADJUSTED_TIME + 500) {
+                if (gamepad1.a) {
+                    GATE_POSITION_TESTING += .1;
+                    GATE_POSITION_LASTADJUSTED_TIME = System.currentTimeMillis();
+                } else if (gamepad1.y) {
+                    GATE_POSITION_TESTING -= .1;
+                    GATE_POSITION_LASTADJUSTED_TIME = System.currentTimeMillis();
+                }
+            }
+            stopperServo.setPosition(GATE_POSITION_TESTING);
+        }
+        else {
+            stopperServo.setPosition(gateClosedForBall ? GATE_CLOSED_POS : GATE_OPENED_POS);
+        }
         // ---------------- TELEMETRY ----------------
         telemetry.addData("Speed Multiplier", String.format("%.2f", speedMultiplier));
         telemetry.addData("GateClosed", gateClosedForBall ? "CLOSED" : "OPEN");
@@ -443,6 +465,8 @@ public class Teleop_18954 extends OpMode {
         telemetry.addData("Short Range RPM",LAUNCHER_SHORTTANGE_RPM);
         telemetry.addData("Long Range RPM",LAUNCHER_LONGRANGE_RPM);
         telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
+        telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
+        telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
 
 
 
