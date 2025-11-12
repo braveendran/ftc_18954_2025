@@ -216,7 +216,7 @@ public class Teleop_VelocityBased extends OpMode {
                     shooterState = ShooterState.STARTING;
                     stateStartTime = System.currentTimeMillis();
                     launcherOn = true;
-                    currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
+                    currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
                     shortRangeMode = shortPowerShot;
                     if(shortRangeMode) {
                         Current_Power_Shooting = LAUNCHER_SHORT_RANGE_POWER;
@@ -225,6 +225,10 @@ public class Teleop_VelocityBased extends OpMode {
                     {
                         Current_Power_Shooting = LAUNCHER_LONG_RANGE_POWER;
                     }
+                }
+                else
+                {
+                    currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
                 }
                 break;
 
