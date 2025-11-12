@@ -36,8 +36,8 @@ public class Teleop_VelocityBased extends OpMode {
     private double LAUNCHER_LONG_RANGE_POWER = LAUNCHER_MAX_POWER;
     private double LAUNCHER_SHORT_RANGE_POWER = LAUNCHER_MAX_POWER * 0.62;
 
-    private long LAUNCHER_SHORTTANGE_RPM = 2500;
-    private long LAUNCHER_LONGRANGE_RPM = 3800;
+    private long LAUNCHER_SHORTTANGE_RPM = 2900;
+    private long LAUNCHER_LONGRANGE_RPM = 3650;
     private final long LAUNCHER_RPM_TOLERANCE = 100;
 
 
@@ -58,8 +58,8 @@ public class Teleop_VelocityBased extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double GATE_DOWN_PUSHED_BALL_IN_SERVOPOS = 0.8;
-    private final double GATE_UP_RAMP_FREE_SERVOPOS = 0.2;
+    private final double GATE_DOWN_PUSHED_BALL_IN_SERVOPOS = 0.83;
+    private final double GATE_UP_RAMP_FREE_SERVOPOS = 0.4;
 
 
     private enum GatePosition {
