@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 public class AutonCloseParams {
 
-    public final double LAUNCHER_MAX_POWER = 1.0;
-    public final double LAUNCHER_POS1_POWER = LAUNCHER_MAX_POWER*.84;
+
+    public final long LAUNCHER_POS1_RPM = 2800;
 
 
     public final double BALLPUSHER_MAX_VELOCITY =3200;

@@ -31,19 +31,7 @@ public class CommonFunc_18954 {
     private final double LAUNCHER_MOTOR_TICKS_PER_REV = 28.0;
 
 
-
-    long INITIAL_SPIN_UP_TIME=1200;
-    long GATE_DOWN_TIME=500;
-    long GATE_UP_TIME=500;
-
     long MINIMAL_SLEEP_TIME=1;
-
-
-    private final double STOPPER_CLOSED = 0.65;
-    private final double STOPPER_OPEN = .94;
-
-
-
 
 
 
@@ -90,42 +78,51 @@ public class CommonFunc_18954 {
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Stopper initial position
-        stopperServo.setPosition(STOPPER_CLOSED);
+        stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
 
         telemetry.addData("Status", "Hardware Initialized");
         telemetry.update();
     }
 
-    public void StartShooter(double LauncherPower, double BallPusherVelocity) {
+    public void StartShooter(long LauncherRPM, double BallPusherVelocity) {
         intakeMotor.setVelocity(3200);
-        launcherMotor.setPower(LauncherPower);
+        setLauncherRPM(LauncherRPM);
+        launcherMotor.setPower(LauncherRPM);
         ballPusherMotor.setVelocity(3200);
         bShooterRunning=true;
     }
     /**
      * A self-contained function to shoot 3 Power Core.
      */
-    public void shootPowerCore(double LauncherPower,boolean unused ,double BallPusherVelocity) {
+    public void shootPowerCore(long LauncherRPM,boolean unused ,double BallPusherVelocity) {
         //telemetry.addData("Shooter", "Starting sequence...");
         //telemetry.update();
 
+        long shooter_start_time;
+
+
         // Spin up the launcher motor
         if(!bShooterRunning) {
-            StartShooter(LauncherPower,BallPusherVelocity);
-            opMode.sleep(INITIAL_SPIN_UP_TIME); // Wait 1.2 seconds for the motor to reach full speed
+            StartShooter(LauncherRPM,BallPusherVelocity);
         }
 
         for (int i=0;i<4;i++) {
+
+            shooter_start_time = System.currentTimeMillis();
+            while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Teleop_VelocityBased.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Teleop_VelocityBased.MAX_WAITTIME_ACHIEVING_RPM))
+            {
+                opMode.sleep(1);
+            }
             // Open the stopper to feed the Power Core
-            stopperServo.setPosition(STOPPER_OPEN);
-            opMode.sleep(GATE_DOWN_TIME); // Wait 0.5 seconds for the core to pass
+            stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS);
+            opMode.sleep(Teleop_VelocityBased.GATE_OPEN_MIN_TIME); // Wait 0.5 seconds for the core to pass
 
             // Close the stopper and turn off the launcher
-            stopperServo.setPosition(STOPPER_CLOSED);
-            opMode.sleep(GATE_UP_TIME);
+            stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
+            opMode.sleep(Teleop_VelocityBased.SHOOTING_POSITION_TIME);
         }
 
-        launcherMotor.setPower(0);
+        setLauncherRPM(0);
         ballPusherMotor.setVelocity(0);
 
         bShooterRunning=false;
@@ -204,14 +201,14 @@ public class CommonFunc_18954 {
     /**
      * Method to strafe left or right. A positive inches value strafes right.
      */
-    public void strafe_left(double speed, double inches, double timeoutS) {
+    public void strafe_right(double speed, double inches, double timeoutS) {
         // For strafing, the motor directions are:
         //Right: -LF, +LB, +RF, -RB
         // Left:  +LF, -LB, -RF, +RB
         encoderDrive(speed, inches, -inches, -inches, inches, timeoutS);
     }
 
-    public void strafe_right(double speed, double inches, double timeoutS) {
+    public void strafe_left(double speed, double inches, double timeoutS) {
         // For strafing, the motor directions are:
         //Right: -LF, +LB, +RF, -RB
         // Left:  +LF, -LB, -RF, +RB
@@ -285,6 +282,21 @@ public class CommonFunc_18954 {
         }
         // Return 0 if it's not a DcMotorEx or if something is wrong
         return 0;
+    }
+
+    public boolean setLauncherRPM(long RPMToSet) {
+        // First, check if launcherMotor is a DcMotorEx instance to safely call getVelocity()
+        if (launcherMotor instanceof DcMotorEx) {
+            double AngularVelocity;
+
+            AngularVelocity=(RPMToSet * LAUNCHER_MOTOR_TICKS_PER_REV)/60 ;
+
+            ((DcMotorEx) launcherMotor).setVelocity(AngularVelocity);
+            return  true;
+        }
+        // Return 0 if it's not a DcMotorEx or if something is wrong
+        return false;
+
     }
 
 }

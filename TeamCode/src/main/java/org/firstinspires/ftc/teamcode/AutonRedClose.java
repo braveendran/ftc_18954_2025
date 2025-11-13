@@ -35,11 +35,11 @@ public class AutonRedClose extends LinearOpMode {
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY );
         //objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
-        objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY );
+        objCommonFunc.StartShooter(params.LAUNCHER_POS1_RPM,params.BALLPUSHER_MAX_VELOCITY );
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
 
-        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
         objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,48, 10);
 
@@ -55,7 +55,7 @@ public class AutonRedClose extends LinearOpMode {
 
         objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,48, 10);
 
-        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
 
         objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,70, 10);

@@ -18,14 +18,14 @@ public class Constants {
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
-            .rightFrontMotorName("FrontRight")
-            .rightRearMotorName("BackRight")
-            .leftRearMotorName("BackLeft")
-            .leftFrontMotorName("FrontLeft")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightFrontMotorName("BackRight")
+            .rightRearMotorName("FrontRight")
+            .leftRearMotorName("FrontLeft")
+            .leftFrontMotorName("BackLeft")
+            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             ;
 
 
@@ -39,8 +39,8 @@ public class Constants {
                             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
                     )
             )
-            .forwardPodY(3.0)
-            .strafePodX(-.5);
+            .forwardPodY(3.25)
+            .strafePodX(4.5);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 

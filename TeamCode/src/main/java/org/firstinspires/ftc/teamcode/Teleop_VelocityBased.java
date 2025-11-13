@@ -31,14 +31,9 @@ public class Teleop_VelocityBased extends OpMode {
     private double speedMultiplier = NORMAL_SPEED;
 
     // ---------------- LAUNCHER SETTINGS ----------------
-    private final double LAUNCHER_MAX_POWER = 1.0;
-
-    private double LAUNCHER_LONG_RANGE_POWER = LAUNCHER_MAX_POWER;
-    private double LAUNCHER_SHORT_RANGE_POWER = LAUNCHER_MAX_POWER * 0.62;
-
-    private long LAUNCHER_SHORTTANGE_RPM = 2900;
-    private long LAUNCHER_LONGRANGE_RPM = 3650;
-    private final long LAUNCHER_RPM_TOLERANCE = 100;
+    public static long  LAUNCHER_SHORTTANGE_RPM = 2850;
+    public static  long LAUNCHER_LONGRANGE_RPM = 3600;
+    public static final  long LAUNCHER_RPM_TOLERANCE = 100;
 
 
 
@@ -58,8 +53,8 @@ public class Teleop_VelocityBased extends OpMode {
 
 
     // ---------------- STOPPER SETTINGS ----------------
-    private final double GATE_DOWN_PUSHED_BALL_IN_SERVOPOS = 0.83;
-    private final double GATE_UP_RAMP_FREE_SERVOPOS = 0.4;
+    public static final double GATE_DOWN_PUSHED_BALL_IN_SERVOPOS = 0.83;
+    public static  final double GATE_UP_RAMP_FREE_SERVOPOS = 0.4;
 
 
     private enum GatePosition {
@@ -73,10 +68,10 @@ public class Teleop_VelocityBased extends OpMode {
     private GatePosition currGatePos = GatePosition.GATE_UP_RAMP_FREE;
     private ShooterState shooterState = ShooterState.IDLE;
 
-    private final long INITIAL_SPIN_UP_TIME=900;
-    private final long SHOOTING_POSITION_TIME=600;
-    private final long GATE_OPEN_MIN_TIME=500;
-    private final long MAX_WAITTIME_ACHIEVING_RPM=500;
+    public static  final  long INITIAL_SPIN_UP_TIME=900;
+    public static  final long SHOOTING_POSITION_TIME=600;
+    public static  final long GATE_OPEN_MIN_TIME=500;
+    public static  final long MAX_WAITTIME_ACHIEVING_RPM=500;
 
 
 
@@ -110,7 +105,6 @@ public class Teleop_VelocityBased extends OpMode {
 
     private long Target_RPM_Shooting=0;
 
-    private double Current_Power_Shooting=0;
 
 
 
@@ -218,13 +212,7 @@ public class Teleop_VelocityBased extends OpMode {
                     launcherOn = true;
                     currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
                     shortRangeMode = shortPowerShot;
-                    if(shortRangeMode) {
-                        Current_Power_Shooting = LAUNCHER_SHORT_RANGE_POWER;
-                    }
-                    else
-                    {
-                        Current_Power_Shooting = LAUNCHER_LONG_RANGE_POWER;
-                    }
+
                 }
                 else
                 {
@@ -453,7 +441,6 @@ public class Teleop_VelocityBased extends OpMode {
         telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
         telemetry.addData("Shooter State", shooterState.toString());
         telemetry.addData("Launcher RPM",getLauncherRpm());
-        telemetry.addData("CurrentPower",Current_Power_Shooting);
         telemetry.addData("Differential",diff_percent);
         telemetry.addData("RPM Based Shooting",!ForceShoot_WithoutRPM);
         telemetry.addData("Short Range RPM",LAUNCHER_SHORTTANGE_RPM);

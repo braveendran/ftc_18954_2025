@@ -33,11 +33,11 @@ public class AutonBlueClose extends LinearOpMode {
         waitForStart();
 
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
-        objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY );
+        objCommonFunc.StartShooter(params.LAUNCHER_POS1_RPM,params.BALLPUSHER_MAX_VELOCITY );
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); 
 
-        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
         objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,48, 10);
 
@@ -53,7 +53,7 @@ public class AutonBlueClose extends LinearOpMode {
 
         objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,48, 10);
 
-        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_POWER,true,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
 
         objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,70, 10);

@@ -37,7 +37,7 @@ public class AutonomousRedFar extends LinearOpMode {
         objCommonFunc.turn(params.TURN_SPEED, -35, 4.0*2);
 
         // Step 3: Shoot one Power Core into the high goal.
-        objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_POWER,false,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
 
         objCommonFunc.turn(params.TURN_SPEED, -90, 4.0*2);
 
@@ -54,7 +54,7 @@ public class AutonomousRedFar extends LinearOpMode {
 
         objCommonFunc.turn(params.TURN_SPEED, 90, 4.0*2);
 
-        objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_POWER,false,params.BALLPUSHER_MAX_VELOCITY);
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
 
         objCommonFunc.turn(params.TURN_SPEED, -90, 4.0*2);
