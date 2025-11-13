@@ -58,7 +58,7 @@ public class AutonRedClose extends LinearOpMode {
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,70, 10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,10, 10);
 
 
         telemetry.addData("Autonomous", "Complete");

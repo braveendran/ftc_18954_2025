@@ -54,7 +54,7 @@ public class Teleop_VelocityBased extends OpMode {
 
     // ---------------- STOPPER SETTINGS ----------------
     public static final double GATE_DOWN_PUSHED_BALL_IN_SERVOPOS = 0.83;
-    public static  final double GATE_UP_RAMP_FREE_SERVOPOS = 0.4;
+    public static  final double GATE_UP_RAMP_FREE_SERVOPOS = 0.33;
 
 
     private enum GatePosition {
@@ -70,7 +70,7 @@ public class Teleop_VelocityBased extends OpMode {
 
     public static  final  long INITIAL_SPIN_UP_TIME=900;
     public static  final long SHOOTING_POSITION_TIME=600;
-    public static  final long GATE_OPEN_MIN_TIME=500;
+    public static  final long GATE_OPEN_MIN_TIME=800;
     public static  final long MAX_WAITTIME_ACHIEVING_RPM=500;
 
 

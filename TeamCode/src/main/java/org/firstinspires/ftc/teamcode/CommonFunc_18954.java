@@ -87,8 +87,8 @@ public class CommonFunc_18954 {
     public void StartShooter(long LauncherRPM, double BallPusherVelocity) {
         intakeMotor.setVelocity(3200);
         setLauncherRPM(LauncherRPM);
-        launcherMotor.setPower(LauncherRPM);
-        ballPusherMotor.setVelocity(3200);
+        //launcherMotor.setPower(LauncherRPM);
+        //ballPusherMotor.setVelocity(3200);
         bShooterRunning=true;
     }
     /**
@@ -108,18 +108,24 @@ public class CommonFunc_18954 {
 
         for (int i=0;i<4;i++) {
 
+            ballPusherMotor.setVelocity(3200);
+            // Open the stopper to feed the Power Core
+            stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS);
+            opMode.sleep(Teleop_VelocityBased.GATE_OPEN_MIN_TIME); // Wait 0.5 seconds for the core to pass
+
             shooter_start_time = System.currentTimeMillis();
             while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Teleop_VelocityBased.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Teleop_VelocityBased.MAX_WAITTIME_ACHIEVING_RPM))
             {
                 opMode.sleep(1);
             }
-            // Open the stopper to feed the Power Core
-            stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS);
-            opMode.sleep(Teleop_VelocityBased.GATE_OPEN_MIN_TIME); // Wait 0.5 seconds for the core to pass
 
+
+            //ballPusherMotor.setVelocity(0);
             // Close the stopper and turn off the launcher
             stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-            opMode.sleep(Teleop_VelocityBased.SHOOTING_POSITION_TIME);
+            opMode.sleep((long)(Teleop_VelocityBased.SHOOTING_POSITION_TIME/2));
+            //ballPusherMotor.setVelocity(3200);
+            opMode.sleep((long)(Teleop_VelocityBased.SHOOTING_POSITION_TIME/2));
         }
 
         setLauncherRPM(0);
