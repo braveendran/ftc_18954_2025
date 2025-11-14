@@ -5,6 +5,8 @@ public class AutonCloseParams {
 
     public final long LAUNCHER_POS1_RPM = 2800;
 
+    public final long ANGLE_TO_TURN_SHOOTING = 25;
+
 
     public final double BALLPUSHER_MAX_VELOCITY =3200;
     public final double INTAKE_MAX_VELOCITY =3200;

@@ -33,13 +33,19 @@ public class AutonBlueClose extends LinearOpMode {
         waitForStart();
 
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
+        //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY );
+        //objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.StartShooter(params.LAUNCHER_POS1_RPM,params.BALLPUSHER_MAX_VELOCITY );
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); 
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
+
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,20, 10);
+        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,48, 10);
+        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,28, 10);
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
@@ -51,12 +57,18 @@ public class AutonBlueClose extends LinearOpMode {
 
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,48, 10);
+
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,28, 10);
+
+        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
+
+        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+
         objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,10, 10);
+        //objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,10, 10);
 
 
         telemetry.addData("Autonomous", "Complete");
