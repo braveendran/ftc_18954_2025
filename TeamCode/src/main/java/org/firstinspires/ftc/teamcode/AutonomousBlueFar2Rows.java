@@ -65,10 +65,10 @@ public class AutonomousBlueFar2Rows extends LinearOpMode {
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 46, 46, 10*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 40, 40, 10*2);
 
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -46, -46, 5.0*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -40, -40, 5.0*2);
 
         objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, params.DIST_ROW2, 5.0*2);
 

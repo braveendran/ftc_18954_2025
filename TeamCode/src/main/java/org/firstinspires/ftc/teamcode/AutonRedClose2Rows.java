@@ -74,11 +74,11 @@ public class AutonRedClose2Rows extends LinearOpMode {
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 40, 40, 10*2);
 
         //objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -40, -40, 5.0*2);
 
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
