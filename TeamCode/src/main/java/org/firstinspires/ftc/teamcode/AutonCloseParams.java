@@ -16,6 +16,6 @@ public class AutonCloseParams {
 
     public final double TURN_SPEED = 0.5;
 
-    public final double DIST_ROW1_MOVE= 30;
-    public final double DIST_ROW2_MOVE= 40;
+    public final double DIST_ROW1_MOVE= 32;
+    public final double DIST_ROW2_MOVE= 44;
 }

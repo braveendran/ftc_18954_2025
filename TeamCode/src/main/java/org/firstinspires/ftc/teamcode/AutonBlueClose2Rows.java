@@ -67,7 +67,7 @@ public class AutonBlueClose2Rows extends LinearOpMode {
         objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 		
 		//row 2 shooting
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
@@ -80,7 +80,7 @@ public class AutonBlueClose2Rows extends LinearOpMode {
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
 
         objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
