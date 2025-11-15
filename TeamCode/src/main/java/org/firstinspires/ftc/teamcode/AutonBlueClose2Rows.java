@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 
 
-@Autonomous(name = "BlueClose", group = "Autonomous")
-public class AutonBlueClose extends LinearOpMode {
+@Autonomous(name = "BlueClose2Rows", group = "Autonomous")
+public class AutonBlueClose2Rows extends LinearOpMode {
 
 
 
@@ -65,6 +65,28 @@ public class AutonBlueClose extends LinearOpMode {
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
         objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+		
+		//row 2 shooting
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
+
+        objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
+
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
+
+        //objCommonFunc.TurnOffIntake();
+
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
+
+        //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
+
+
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
+
+        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+
+        objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
+
+        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
         objCommonFunc.TurnOffIntake();
 
