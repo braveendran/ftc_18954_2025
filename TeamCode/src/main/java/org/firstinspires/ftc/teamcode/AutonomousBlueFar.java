@@ -41,7 +41,7 @@ public class AutonomousBlueFar extends LinearOpMode {
 
         objCommonFunc.turn(params.TURN_SPEED, 90, 4.0*2);
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW, 18,  5.0*2);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW, params.DIST_ROW1,  5.0*2);
         
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
@@ -50,12 +50,15 @@ public class AutonomousBlueFar extends LinearOpMode {
 
         objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -46, -46, 5.0*2);
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, 18, 5.0*2);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, params.DIST_ROW1, 5.0*2);
 
         objCommonFunc.turn(params.TURN_SPEED, -90, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
+
+
+        //END OF Auton. Go to parking
 
         objCommonFunc.turn(params.TURN_SPEED, 90, 4.0*2);
         //Move out of the shooting
