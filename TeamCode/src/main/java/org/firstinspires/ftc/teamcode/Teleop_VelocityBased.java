@@ -1,15 +1,18 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+
 
 @TeleOp(name = "TeleopVelocity", group = "Test")
 public class Teleop_VelocityBased extends OpMode {
@@ -102,8 +105,14 @@ public class Teleop_VelocityBased extends OpMode {
     CommonCamera_18954 mCameraRef;
 
     private final boolean ENABLE_CAMERA_DEFINE=false;
+    private final boolean ENABLE_LIMEIGHT_CAMERA=true;
+
 
     private long Target_RPM_Shooting=0;
+
+    LimeLightHandler mLimeLightHandler;
+    IMU imu;
+
 
 
 
@@ -158,8 +167,18 @@ public class Teleop_VelocityBased extends OpMode {
         // Stopper initial position
         stopperServo.setPosition(GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
 
+        //IMU
+        imu = hardwareMap.get(IMU.class, "imu");
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+
         if(ENABLE_CAMERA_DEFINE) {
             mCameraRef = new CommonCamera_18954(this);
+        }
+
+        if(ENABLE_LIMEIGHT_CAMERA) {
+            mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
         }
 
 
@@ -176,6 +195,10 @@ public class Teleop_VelocityBased extends OpMode {
         //----------------- CAMERA Feedback -----------------
         if(ENABLE_CAMERA_DEFINE) {
             pose = mCameraRef.telemetryAprilTag();
+        }
+
+        if(ENABLE_LIMEIGHT_CAMERA) {
+            pose = mLimeLightHandler.update(System.currentTimeMillis());
         }
 
 
@@ -455,6 +478,16 @@ public class Teleop_VelocityBased extends OpMode {
         telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
         telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
 
+        if(ENABLE_LIMEIGHT_CAMERA){
+            if(pose != null) {
+                telemetry.addData("X", pose.getPosition().x);
+                telemetry.addData("Y", pose.getPosition().y);
+                telemetry.addData("Z", pose.getPosition().z);
+                telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
+                telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+                telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+            }
+        }
 
 
         if(ENABLE_CAMERA_DEFINE) {
