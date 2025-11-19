@@ -388,7 +388,13 @@ public class Teleop_VelocityBased extends OpMode {
 
 
         // ---------------- LAUNCHER CONTROL ----------------
-        if (launcherOn) {
+
+        if(intake_spitout)
+        {
+            setLauncherRPM(-LAUNCHER_LONGRANGE_RPM);
+            currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
+        }
+        else if (launcherOn) {
 
             double current_launcher_rpm;
 
