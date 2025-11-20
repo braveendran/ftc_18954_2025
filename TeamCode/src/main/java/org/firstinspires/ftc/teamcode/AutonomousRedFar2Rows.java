@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Autonomous(name = "RedFar2Rows", group = "Autonomous")
 public class AutonomousRedFar2Rows extends LinearOpMode {
 
-    private AutonFar autonFar;
+    private AutonMovement autonMovement;
 
     @Override
     public void runOpMode() {
-        autonFar = new AutonFar(this, AutonFar.Alliance.RED, true);
-        autonFar.runAutonomousSequence();
+        autonMovement = new AutonMovement(this, AutonMovement.Alliance.RED, AutonMovement.PositionType.FAR, true);
+        autonMovement.runAutonomousSequence();
     }
 }

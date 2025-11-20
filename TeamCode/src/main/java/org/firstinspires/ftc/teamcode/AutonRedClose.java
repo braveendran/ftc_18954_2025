@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Autonomous(name = "RedClose", group = "Autonomous")
 public class AutonRedClose extends LinearOpMode {
 
-    private AutonClose autonClose;
+    private AutonMovement autonMovement;
 
     @Override
     public void runOpMode() {
-        autonClose = new AutonClose(this, AutonClose.Alliance.RED);
-        autonClose.runAutonomousSequence();
+        autonMovement = new AutonMovement(this, AutonMovement.Alliance.RED, AutonMovement.PositionType.CLOSE);
+        autonMovement.runAutonomousSequence();
     }
 }
