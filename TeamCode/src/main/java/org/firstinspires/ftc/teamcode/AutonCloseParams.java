@@ -30,4 +30,7 @@ public class AutonCloseParams {
     public final double TURN_TIMEOUT = 8.0;
     public final double STRAFE_TIMEOUT = 10.0;
     public final double SLEEP_TIME = 2000;
+    
+    // Second row specific distances
+    public final double DRIVE_FORWARD_DISTANCE_ROW2 = 40;
 }
