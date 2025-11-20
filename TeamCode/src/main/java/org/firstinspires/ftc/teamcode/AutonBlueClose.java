@@ -37,34 +37,34 @@ public class AutonBlueClose extends LinearOpMode {
         //objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.StartShooter(params.LAUNCHER_POS1_RPM,params.BALLPUSHER_MAX_VELOCITY );
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -params.DRIVE_BACK_DISTANCE, -params.DRIVE_BACK_DISTANCE, params.DRIVE_TIMEOUT); // Move backward 30 inches
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,20, 10);
-        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, params.STRAFE_DISTANCE_1, params.STRAFE_TIMEOUT);
+        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, params.TURN_TIMEOUT);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW1_MOVE, 10);
+        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, params.TURN_TIMEOUT);
+        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, params.STRAFE_DISTANCE_2, params.STRAFE_TIMEOUT);
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, params.DRIVE_FORWARD_DISTANCE, params.DRIVE_FORWARD_DISTANCE, params.DRIVE_TIMEOUT);
 
         //objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -42, 5.0*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -params.DRIVE_FORWARD_DISTANCE, -params.DRIVE_FORWARD_DISTANCE, params.DRIVE_TIMEOUT);
 
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,params.DIST_ROW1_MOVE, 10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW, params.STRAFE_DISTANCE_2, params.STRAFE_TIMEOUT);
 
-        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, params.TURN_TIMEOUT);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, params.TURN_TIMEOUT);
 
         objCommonFunc.TurnOffIntake();
 
@@ -73,7 +73,7 @@ public class AutonBlueClose extends LinearOpMode {
 
         telemetry.addData("Autonomous", "Complete");
         telemetry.update();
-        sleep(2000); // Keep telemetry on screen for 2 seconds
+        sleep((int)params.SLEEP_TIME); // Keep telemetry on screen for 2 seconds
     }
 
 
