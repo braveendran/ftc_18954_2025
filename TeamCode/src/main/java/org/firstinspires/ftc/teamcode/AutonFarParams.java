@@ -18,6 +18,23 @@ public class AutonFarParams {
 
     public final double DIST_ROW1=18;
     public final double DIST_ROW2=42;
+    
+    // Drive distances
+    public final double INITIAL_FORWARD_DISTANCE = 12;
+    public final double COLLECTION_DISTANCE = 46;
+    public final double COLLECTION_DISTANCE_ROW2 = 40;
+    public final double PARKING_DISTANCE = 18;
+    
+    // Turn angles
+    public final double INITIAL_TURN_ANGLE = 35;
+    public final double TURN_TO_COLLECT = 90;
+    
+    // Timeout values
+    public final double DRIVE_TIMEOUT_SHORT = 10.0;
+    public final double DRIVE_TIMEOUT_LONG = 20.0;
+    public final double TURN_TIMEOUT = 8.0;
+    public final double STRAFE_TIMEOUT = 10.0;
+    public final double SLEEP_TIME = 2000;
 }
 
 
