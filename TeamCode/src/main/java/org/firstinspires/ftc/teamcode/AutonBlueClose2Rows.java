@@ -10,7 +10,7 @@ public class AutonBlueClose2Rows extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        autonMovement = new AutonMovement(this, AutonMovement.Alliance.BLUE, AutonMovement.PositionType.CLOSE, true);
+        autonMovement = new AutonMovement(this, CommonDefs.Alliance.BLUE, CommonDefs.PositionType.CLOSE, true);
         autonMovement.runAutonomousSequence();
     }
 }
