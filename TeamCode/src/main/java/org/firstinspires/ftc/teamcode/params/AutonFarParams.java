@@ -23,8 +23,8 @@ public class AutonFarParams {
     
     // Drive distances
     public final double INITIAL_FORWARD_DISTANCE = 12;
-    public final double COLLECTION_DISTANCE = 46;
-    public final double COLLECTION_DISTANCE_ROW2 = 40;
+    public final double COLLECTION_DISTANCE = 40;
+    public final double COLLECTION_DISTANCE_ROW2 = 37;
     public final double PARKING_DISTANCE = 18;
     
     // Turn angles

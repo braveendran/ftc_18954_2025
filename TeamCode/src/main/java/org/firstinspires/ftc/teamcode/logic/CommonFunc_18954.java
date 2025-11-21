@@ -143,7 +143,7 @@ public class CommonFunc_18954 {
 
         for (int i=0;i<4;i++) {
 
-            //ballPusherMotor.setVelocity(3200);
+            ballPusherMotor.setVelocity(3200);
             // Open the stopper to feed the Power Core
             stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS);
             opMode.sleep(Teleop_VelocityBased.GATE_OPEN_MIN_TIME); // Wait 0.5 seconds for the core to pass

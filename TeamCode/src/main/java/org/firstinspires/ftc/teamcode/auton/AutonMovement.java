@@ -228,10 +228,10 @@ public class AutonMovement {
         // Step 6: Return to shooting position for second shot
         if (alliance == CommonDefs.Alliance.BLUE) {
             objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1, farParams.STRAFE_TIMEOUT);
-            objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT,farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
+            objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT,farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
         } else { // RED
             objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1, farParams.STRAFE_TIMEOUT);
-            objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,-farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
+            objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,-farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
         }
         opMode.telemetry.addData("Step 6", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();
@@ -264,33 +264,34 @@ public class AutonMovement {
             opMode.telemetry.addData("Step 9", objCommonFunc.getIMUYaw());
             opMode.telemetry.update();
 
-            // Step 10: Return to shooting position for third shot
+//            // Step 10: Return to shooting position for third shot
+//            if (alliance == CommonDefs.Alliance.BLUE) {
+//                objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
+//                objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT,farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
+//            } else { // RED
+//                objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
+//                objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,-farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
+//            }
+//
+//            opMode.telemetry.addData("Step 10", objCommonFunc.getIMUYaw());
+//            opMode.telemetry.update();
+//
+//            // Step 11: Third shooting sequence
+//            objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY);
+//            objCommonFunc.TurnOffIntake();
+        }
+        else {
+
+            // END OF Auton - Go to parking
             if (alliance == CommonDefs.Alliance.BLUE) {
-                objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
-                objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT,farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
+                objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT, farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
             } else { // RED
-                objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
-                objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,-farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
+                objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT, -farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
             }
 
-            opMode.telemetry.addData("Step 10", objCommonFunc.getIMUYaw());
-            opMode.telemetry.update();
-
-            // Step 11: Third shooting sequence
-            objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY);
-            objCommonFunc.TurnOffIntake();
+            // Move out of the shooting area for parking
+            objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.PARKING_DISTANCE, farParams.PARKING_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
         }
-        
-        // END OF Auton - Go to parking
-        if (alliance == CommonDefs.Alliance.BLUE) {
-            objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
-        } else { // RED
-            objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT,-farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
-        }
-        
-        // Move out of the shooting area for parking
-        objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.PARKING_DISTANCE, farParams.PARKING_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
-        
         // Completion telemetry
         opMode.telemetry.addData("Autonomous", "Complete");
         opMode.telemetry.update();
