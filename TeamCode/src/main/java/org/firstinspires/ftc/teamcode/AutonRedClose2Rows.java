@@ -39,20 +39,20 @@ public class AutonRedClose2Rows extends LinearOpMode {
         //objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.StartShooter(params.LAUNCHER_POS1_RPM,params.BALLPUSHER_MAX_VELOCITY );
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -30, -30 , 5.0*2); // Move forward 30 inches
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -45, -45 , 5.0*2); // Move forward 30 inches
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,20, 10);
-        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        //objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,20, 10);
+        //objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
         objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,params.DIST_ROW1_MOVE, 10);
+        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW,12, 10);
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 43, 43, 10*2);
 
         //objCommonFunc.TurnOffIntake();
 
@@ -61,9 +61,9 @@ public class AutonRedClose2Rows extends LinearOpMode {
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW1_MOVE, 10);
+        //objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW1_MOVE, 10);
 
-        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING+5, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
@@ -74,22 +74,22 @@ public class AutonRedClose2Rows extends LinearOpMode {
 
         objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 40, 40, 10*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 42, 42, 10*2);
 
         //objCommonFunc.TurnOffIntake();
 
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -40, -40, 5.0*2);
+        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -42, -40, 5.0*2);
 
         //objCommonFunc.StartShooter(params.LAUNCHER_POS1_POWER,params.BALLPUSHER_MAX_VELOCITY);
 
 
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW,params.DIST_ROW2_MOVE, 10);
+        objCommonFunc.strafe_left(1.0,params.DIST_ROW2_MOVE, 10);
 
         objCommonFunc.turn(params.TURN_SPEED, params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
 
         objCommonFunc.shootPowerCore(params.LAUNCHER_POS1_RPM,true,params.BALLPUSHER_MAX_VELOCITY);
 
-        objCommonFunc.turn(params.TURN_SPEED, -params.ANGLE_TO_TURN_SHOOTING, 4.0*2);
+        objCommonFunc.turn(params.TURN_SPEED, -(params.ANGLE_TO_TURN_SHOOTING+10), 4.0*2);
 
         objCommonFunc.TurnOffIntake();
 
