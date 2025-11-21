@@ -1,7 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.logic.CommonDefs;
+import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
+import org.firstinspires.ftc.teamcode.params.AutonCloseParams;
+import org.firstinspires.ftc.teamcode.params.AutonFarParams;
 public class AutonMovement {
     
     private LinearOpMode opMode;
@@ -51,20 +55,21 @@ public class AutonMovement {
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
         
         // Step 1: Move forward away from the wall to get clearance for shooting
-        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.INITIAL_FORWARD_DISTANCE, closeParams.INITIAL_FORWARD_DISTANCE, closeParams.DRIVE_TIMEOUT_SHORT);
+        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.INITIAL_BACKWARD_DIST, closeParams.INITIAL_BACKWARD_DIST, closeParams.DRIVE_TIMEOUT_SHORT);
         
         // Step 2: Turn towards the high goal (more conservative angle since we're close)
-        if (alliance == CommonDefs.Alliance.BLUE) {
-            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.INITIAL_TURN_ANGLE, closeParams.TURN_TIMEOUT);
-        } else { // RED
-            objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.INITIAL_TURN_ANGLE, closeParams.TURN_TIMEOUT);
-        }
+        //        if (alliance == CommonDefs.Alliance.BLUE) {
+        //            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.INITIAL_TURN_ANGLE, closeParams.TURN_TIMEOUT);
+        //        } else { // RED
+        //            objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.INITIAL_TURN_ANGLE, closeParams.TURN_TIMEOUT);
+        //        }
         
         // Step 3: Shoot first Power Core into the high goal  
         objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY);
+
         
         // Step 4: Navigate to first row collection position
-        if (alliance == CommonDefs.Alliance.BLUE) {
+        if (alliance == CommonDefs.Alliance.RED) {
             objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
             objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW1, closeParams.STRAFE_TIMEOUT);
         } else { // RED
@@ -74,11 +79,11 @@ public class AutonMovement {
         
         // Step 5: Turn on intake and collect from first row
         objCommonFunc.TurnOnIntake(closeParams.INTAKE_MAX_VELOCITY, closeParams.BALLPUSHER_MAX_VELOCITY);
-        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.COLLECTION_DISTANCE, closeParams.COLLECTION_DISTANCE, closeParams.DRIVE_TIMEOUT_LONG);
-        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE, -closeParams.COLLECTION_DISTANCE, closeParams.DRIVE_TIMEOUT_SHORT);
+        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_LONG);
+        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE_ROW1, -closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_SHORT);
         
         // Step 6: Return to shooting position for second shot
-        if (alliance == CommonDefs.Alliance.BLUE) {
+        if (alliance == CommonDefs.Alliance.RED) {
             objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW1, closeParams.STRAFE_TIMEOUT);
             objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
         } else { // RED
@@ -93,7 +98,7 @@ public class AutonMovement {
         // Second row logic (only if twoRowMode is enabled)
         if (twoRowMode) {
             // Step 8: Move to second row collection
-            if (alliance == CommonDefs.Alliance.BLUE) {
+            if (alliance == CommonDefs.Alliance.RED) {
                 objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
                 objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2, closeParams.STRAFE_TIMEOUT);
             } else { // RED
@@ -107,7 +112,7 @@ public class AutonMovement {
             objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE_ROW2, -closeParams.COLLECTION_DISTANCE_ROW2, closeParams.DRIVE_TIMEOUT_SHORT);
             
             // Step 10: Return to shooting position for third shot
-            if (alliance == CommonDefs.Alliance.BLUE) {
+            if (alliance == CommonDefs.Alliance.RED) {
                 objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2, closeParams.STRAFE_TIMEOUT);
                 objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
             } else { // RED
@@ -126,10 +131,18 @@ public class AutonMovement {
         } else { // RED
             objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
         }
-        
+
+
+
         // Move out of the shooting area for parking
-        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.PARKING_DISTANCE, closeParams.DRIVE_TIMEOUT_SHORT);
-        
+        //objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.PARKING_DISTANCE, closeParams.DRIVE_TIMEOUT_SHORT);
+        if (alliance == CommonDefs.Alliance.BLUE) {
+            objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
+
+        } else { // RED
+            objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
+
+        }
         // Completion telemetry
         opMode.telemetry.addData("Autonomous", "Complete");
         opMode.telemetry.update();

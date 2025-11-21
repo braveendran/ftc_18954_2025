@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode;
-
+package org.firstinspires.ftc.teamcode.logic;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -10,6 +11,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Teleop_VelocityBased;
+import org.firstinspires.ftc.teamcode.logic.DistVelocityProjection;
 
 
 public class CommonFunc_18954 {
@@ -37,7 +40,7 @@ public class CommonFunc_18954 {
 
     IMU imu;
     LimeLightHandler mLimeLightHandler;
-    DistanceDistVelocityProjection mDistanceDistVelocityProjection;
+    DistVelocityProjection mDistanceDistVelocityProjection;
 
 
 
@@ -91,7 +94,7 @@ public class CommonFunc_18954 {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
-        mDistanceDistVelocityProjection = new DistanceDistVelocityProjection();
+        mDistanceDistVelocityProjection = new DistVelocityProjection();
 
         telemetry.addData("Status", "Hardware Initialized");
         telemetry.update();

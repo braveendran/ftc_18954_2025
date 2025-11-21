@@ -1,8 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
+import org.firstinspires.ftc.teamcode.params.AutonFarParams;
+
 
 @Autonomous(name = "BlueFar_ButNearShoot", group = "Autonomous")
 @Disabled

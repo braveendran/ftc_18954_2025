@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.logic;
 
 /**
  * Common definitions and enums used across the autonomous system
