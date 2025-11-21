@@ -15,6 +15,8 @@ public class AutonMovement {
     private CommonDefs.Alliance alliance;
     private CommonDefs.PositionType positionType;
     private boolean twoRowMode;
+
+
     
     // Constructor for Close positioning
     public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
@@ -53,10 +55,12 @@ public class AutonMovement {
         opMode.waitForStart();
         
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
-        
+        opMode.telemetry.addData("Starting IMU", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
+
         // Step 1: Move forward away from the wall to get clearance for shooting
         objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.INITIAL_BACKWARD_DIST, closeParams.INITIAL_BACKWARD_DIST, closeParams.DRIVE_TIMEOUT_SHORT);
-        
+        opMode.telemetry.addData("Step 1", objCommonFunc.getIMUYaw());
         // Step 2: Turn towards the high goal (more conservative angle since we're close)
         //        if (alliance == CommonDefs.Alliance.BLUE) {
         //            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.INITIAL_TURN_ANGLE, closeParams.TURN_TIMEOUT);
@@ -66,7 +70,8 @@ public class AutonMovement {
         
         // Step 3: Shoot first Power Core into the high goal  
         objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY);
-
+        opMode.telemetry.addData("Step 3", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Step 4: Navigate to first row collection position
         if (alliance == CommonDefs.Alliance.RED) {
@@ -76,73 +81,88 @@ public class AutonMovement {
             objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
             objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW1, closeParams.STRAFE_TIMEOUT);
         }
+        opMode.telemetry.addData("Step 4", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Step 5: Turn on intake and collect from first row
         objCommonFunc.TurnOnIntake(closeParams.INTAKE_MAX_VELOCITY, closeParams.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_LONG);
         objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE_ROW1, -closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_SHORT);
-        
+
+        opMode.telemetry.addData("Step 5", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
+
         // Step 6: Return to shooting position for second shot
         if (alliance == CommonDefs.Alliance.RED) {
             objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW1, closeParams.STRAFE_TIMEOUT);
-            objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
+            objCommonFunc.turn(closeParams.TURN_SPEED, -(closeParams.TURN_TO_COLLECT + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA), closeParams.TURN_TIMEOUT);
         } else { // RED
             objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW1, closeParams.STRAFE_TIMEOUT);
-            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
+            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT+ closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA, closeParams.TURN_TIMEOUT);
         }
+        opMode.telemetry.addData("Step 6", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
         objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
+
+        opMode.telemetry.addData("Step 7", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Second row logic (only if twoRowMode is enabled)
         if (twoRowMode) {
             // Step 8: Move to second row collection
             if (alliance == CommonDefs.Alliance.RED) {
                 objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
-                objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2, closeParams.STRAFE_TIMEOUT);
+                objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2 , closeParams.STRAFE_TIMEOUT);
             } else { // RED
                 objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
                 objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2, closeParams.STRAFE_TIMEOUT);
             }
+            opMode.telemetry.addData("Step 8", objCommonFunc.getIMUYaw());
+            opMode.telemetry.update();
             
             // Step 9: Collect from second row
             objCommonFunc.TurnOnIntake(closeParams.INTAKE_MAX_VELOCITY, closeParams.BALLPUSHER_MAX_VELOCITY);
             objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.COLLECTION_DISTANCE_ROW2, closeParams.COLLECTION_DISTANCE_ROW2, closeParams.DRIVE_TIMEOUT_LONG);
             objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE_ROW2, -closeParams.COLLECTION_DISTANCE_ROW2, closeParams.DRIVE_TIMEOUT_SHORT);
-            
+
+            opMode.telemetry.addData("Step 9", objCommonFunc.getIMUYaw());
+            opMode.telemetry.update();
             // Step 10: Return to shooting position for third shot
             if (alliance == CommonDefs.Alliance.RED) {
-                objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2, closeParams.STRAFE_TIMEOUT);
-                objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
+                objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_ROW2_HIGHSPEED, closeParams.DIST_ROW2 +closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
+                objCommonFunc.turn(closeParams.TURN_SPEED, - (closeParams.TURN_TO_SHOOT_ROW2 + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA), closeParams.TURN_TIMEOUT);
             } else { // RED
-                objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.DIST_ROW2, closeParams.STRAFE_TIMEOUT);
-                objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
+                objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_ROW2_HIGHSPEED, closeParams.DIST_ROW2 +closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
+                objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_SHOOT_ROW2 + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA, closeParams.TURN_TIMEOUT);
             }
-            
+            opMode.telemetry.addData("Step 10", objCommonFunc.getIMUYaw());
+            opMode.telemetry.update();
             // Step 11: Third shooting sequence
             objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY);
             objCommonFunc.TurnOffIntake();
         }
         
-        // END OF Auton - Go to parking
-        if (alliance == CommonDefs.Alliance.BLUE) {
-            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
-        } else { // RED
-            objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
-        }
-
-
-
-        // Move out of the shooting area for parking
-        //objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.PARKING_DISTANCE, closeParams.DRIVE_TIMEOUT_SHORT);
-        if (alliance == CommonDefs.Alliance.BLUE) {
-            objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
-
-        } else { // RED
-            objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
-
-        }
+//        // END OF Auton - Go to parking
+//        if (alliance == CommonDefs.Alliance.BLUE) {
+//            objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
+//        } else { // RED
+//            objCommonFunc.turn(closeParams.TURN_SPEED, -closeParams.TURN_TO_COLLECT, closeParams.TURN_TIMEOUT);
+//        }
+//
+//
+//
+//        // Move out of the shooting area for parking
+//        //objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.PARKING_DISTANCE, closeParams.DRIVE_TIMEOUT_SHORT);
+//        if (alliance == CommonDefs.Alliance.BLUE) {
+//            objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
+//
+//        } else { // RED
+//            objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_SLOW, closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
+//
+//        }
         // Completion telemetry
         opMode.telemetry.addData("Autonomous", "Complete");
         opMode.telemetry.update();
@@ -162,20 +182,30 @@ public class AutonMovement {
         opMode.waitForStart();
         
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
+
+        opMode.telemetry.addData("Starting IMU", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Step 1: Move forward away from the wall to get clearance for shooting
         objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.INITIAL_FORWARD_DISTANCE, farParams.INITIAL_FORWARD_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
-        
+
+        opMode.telemetry.addData("Step 1", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
+
         // Step 2: Turn towards the high goal
         if (alliance == CommonDefs.Alliance.BLUE) {
             objCommonFunc.turn(farParams.TURN_SPEED, farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
         } else { // RED
             objCommonFunc.turn(farParams.TURN_SPEED, -farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
         }
-        
+
+        opMode.telemetry.addData("Step 2", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
+
         // Step 3: Shoot first Power Core into the high goal
         objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY);
-        
+        opMode.telemetry.addData("Step 3", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         // Step 4: Turn to collection position
         if (alliance == CommonDefs.Alliance.BLUE) {
             objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
@@ -184,12 +214,15 @@ public class AutonMovement {
             objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
             objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1, farParams.STRAFE_TIMEOUT);
         }
-        
+        opMode.telemetry.addData("Step 4", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         // Step 5: Turn on intake and collect from first row
         objCommonFunc.TurnOnIntake(farParams.INTAKE_MAX_VELOCITY, farParams.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.COLLECTION_DISTANCE, farParams.COLLECTION_DISTANCE, farParams.DRIVE_TIMEOUT_LONG);
         objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, -farParams.COLLECTION_DISTANCE, -farParams.COLLECTION_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
-        
+
+        opMode.telemetry.addData("Step 5", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         // Step 6: Return to shooting position for second shot
         if (alliance == CommonDefs.Alliance.BLUE) {
             objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1, farParams.STRAFE_TIMEOUT);
@@ -198,10 +231,14 @@ public class AutonMovement {
             objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1, farParams.STRAFE_TIMEOUT);
             objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
         }
+        opMode.telemetry.addData("Step 6", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
         objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY);
         objCommonFunc.TurnOffIntake();
+        opMode.telemetry.addData("Step 7", objCommonFunc.getIMUYaw());
+        opMode.telemetry.update();
         
         // Second row logic (only if twoRowMode is enabled)
         if (twoRowMode) {
@@ -213,12 +250,18 @@ public class AutonMovement {
                 objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
                 objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
             }
+            opMode.telemetry.addData("Step 8", objCommonFunc.getIMUYaw());
+            opMode.telemetry.update();
+
             
             // Step 9: Collect from second row
             objCommonFunc.TurnOnIntake(farParams.INTAKE_MAX_VELOCITY, farParams.BALLPUSHER_MAX_VELOCITY);
             objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.COLLECTION_DISTANCE_ROW2, farParams.COLLECTION_DISTANCE_ROW2, farParams.DRIVE_TIMEOUT_LONG);
             objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, -farParams.COLLECTION_DISTANCE_ROW2, -farParams.COLLECTION_DISTANCE_ROW2, farParams.DRIVE_TIMEOUT_SHORT);
-            
+
+            opMode.telemetry.addData("Step 9", objCommonFunc.getIMUYaw());
+            opMode.telemetry.update();
+
             // Step 10: Return to shooting position for third shot
             if (alliance == CommonDefs.Alliance.BLUE) {
                 objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
@@ -227,7 +270,10 @@ public class AutonMovement {
                 objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW2, farParams.STRAFE_TIMEOUT);
                 objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT, farParams.TURN_TIMEOUT);
             }
-            
+
+            opMode.telemetry.addData("Step 10", objCommonFunc.getIMUYaw());
+            opMode.telemetry.update();
+
             // Step 11: Third shooting sequence
             objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY);
             objCommonFunc.TurnOffIntake();

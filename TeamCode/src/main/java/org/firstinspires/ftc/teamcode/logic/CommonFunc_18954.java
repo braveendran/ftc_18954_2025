@@ -39,6 +39,7 @@ public class CommonFunc_18954 {
     long MINIMAL_SLEEP_TIME=1;
 
     IMU imu;
+    double StartingYaw;
     LimeLightHandler mLimeLightHandler;
     DistVelocityProjection mDistanceDistVelocityProjection;
 
@@ -48,7 +49,20 @@ public class CommonFunc_18954 {
         this.opMode = opMode;
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
+
+
+
     }
+
+    public double getIMUYaw() {
+        if(imu!=null) {
+            return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        }
+        else {
+            return 361;
+        }
+    }
+
 
 
     public void initializeHardware() {
@@ -92,6 +106,9 @@ public class CommonFunc_18954 {
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+        imu.resetYaw();
+
+        StartingYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
         mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
         mDistanceDistVelocityProjection = new DistVelocityProjection();
@@ -124,7 +141,7 @@ public class CommonFunc_18954 {
 
         for (int i=0;i<4;i++) {
 
-            ballPusherMotor.setVelocity(3200);
+            //ballPusherMotor.setVelocity(3200);
             // Open the stopper to feed the Power Core
             stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS);
             opMode.sleep(Teleop_VelocityBased.GATE_OPEN_MIN_TIME); // Wait 0.5 seconds for the core to pass
