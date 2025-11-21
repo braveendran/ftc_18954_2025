@@ -19,6 +19,7 @@ public class AutonFarParams {
     public final double TURN_SPEED = 0.3;
 
     public final double DIST_ROW1=18;
+    public final double DIST_ROW1_ADDITIONAL_RETURN=2;
     public final double DIST_ROW2=42;
     
     // Drive distances
