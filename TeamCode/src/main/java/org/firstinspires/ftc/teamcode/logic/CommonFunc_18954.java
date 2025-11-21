@@ -292,7 +292,7 @@ public class CommonFunc_18954 {
        double currentYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
        double targetYaw = norm.applyAsDouble(absolute_yaw);
 
-       final double HEADING_TOLERANCE_DEG = 1.5; // degrees
+       //final double HEADING_TOLERANCE_DEG = 1.5; // degrees
        final double MIN_POWER = 0.10; // minimum power to overcome static friction
        final double K_P = 0.015; // proportional gain (tune for your robot)
        long startMs = System.currentTimeMillis();
@@ -305,7 +305,7 @@ public class CommonFunc_18954 {
            double error = shortestDiff.apply(targetYaw, currentYaw);
 
            // If within tolerance, we're done
-           if (Math.abs(error) <= HEADING_TOLERANCE_DEG) break;
+           if (Math.abs(error) <= CommonDefs.HEADING_TOLERANCE_DEG) break;
 
            // P-controller output
            double output = K_P * error;

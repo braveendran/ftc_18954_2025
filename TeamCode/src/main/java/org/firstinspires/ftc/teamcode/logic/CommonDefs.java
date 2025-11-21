@@ -21,5 +21,7 @@ public class CommonDefs {
     // Distance between front and back wheel centers (wheelbase)
     public static final double WHEEL_BASE_INCHES = 18.0; // adjust to your robot's measured value
 
+    public static final double HEADING_TOLERANCE_DEG=1.0;
+
 }
 

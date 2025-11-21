@@ -86,7 +86,7 @@ public class AutonMovement {
         
         // Step 5: Turn on intake and collect from first row
         objCommonFunc.TurnOnIntake(closeParams.INTAKE_MAX_VELOCITY, closeParams.BALLPUSHER_MAX_VELOCITY);
-        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_LONG);
+        objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_INTAKE, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_LONG);
         objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE_ROW1, -closeParams.COLLECTION_DISTANCE_ROW1, closeParams.DRIVE_TIMEOUT_SHORT);
 
         opMode.telemetry.addData("Step 5", objCommonFunc.getIMUYaw());
@@ -125,7 +125,7 @@ public class AutonMovement {
             
             // Step 9: Collect from second row
             objCommonFunc.TurnOnIntake(closeParams.INTAKE_MAX_VELOCITY, closeParams.BALLPUSHER_MAX_VELOCITY);
-            objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, closeParams.COLLECTION_DISTANCE_ROW2, closeParams.COLLECTION_DISTANCE_ROW2, closeParams.DRIVE_TIMEOUT_LONG);
+            objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_INTAKE, closeParams.COLLECTION_DISTANCE_ROW2, closeParams.COLLECTION_DISTANCE_ROW2, closeParams.DRIVE_TIMEOUT_LONG);
             objCommonFunc.encoderDrive(closeParams.DRIVE_SPEED_SLOW, -closeParams.COLLECTION_DISTANCE_ROW2, -closeParams.COLLECTION_DISTANCE_ROW2, closeParams.DRIVE_TIMEOUT_SHORT);
 
             opMode.telemetry.addData("Step 9", objCommonFunc.getIMUYaw());
@@ -133,15 +133,15 @@ public class AutonMovement {
             // Step 10: Return to shooting position for third shot
             if (alliance == CommonDefs.Alliance.RED) {
                 objCommonFunc.strafe_left(closeParams.DRIVE_SPEED_ROW2_HIGHSPEED, closeParams.DIST_ROW2 +closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
-                objCommonFunc.turn(closeParams.TURN_SPEED, - (closeParams.TURN_TO_SHOOT_ROW2 + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA), 0,closeParams.TURN_TIMEOUT);
+                objCommonFunc.turn(closeParams.TURN_SPEED, - (closeParams.TURN_TO_SHOOT_ROW2 + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA), closeParams.TURN_TO_SHOOT_ROW2_ABSOLUTE,closeParams.TURN_TIMEOUT);
             } else { // RED
                 objCommonFunc.strafe_right(closeParams.DRIVE_SPEED_ROW2_HIGHSPEED, closeParams.DIST_ROW2 +closeParams.PARKING_DISTANCE, closeParams.STRAFE_TIMEOUT);
-                objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_SHOOT_ROW2 + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA, 0,closeParams.TURN_TIMEOUT);
+                objCommonFunc.turn(closeParams.TURN_SPEED, closeParams.TURN_TO_SHOOT_ROW2 + closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA, -closeParams.TURN_TO_SHOOT_ROW2_ABSOLUTE,closeParams.TURN_TIMEOUT);
             }
             opMode.telemetry.addData("Step 10", objCommonFunc.getIMUYaw());
             opMode.telemetry.update();
             // Step 11: Third shooting sequence
-            objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY);
+            //objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY);
             objCommonFunc.TurnOffIntake();
         }
         else {
@@ -220,7 +220,7 @@ public class AutonMovement {
         opMode.telemetry.update();
         // Step 5: Turn on intake and collect from first row
         objCommonFunc.TurnOnIntake(farParams.INTAKE_MAX_VELOCITY, farParams.BALLPUSHER_MAX_VELOCITY);
-        objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.COLLECTION_DISTANCE, farParams.COLLECTION_DISTANCE, farParams.DRIVE_TIMEOUT_LONG);
+        objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_INTAKE, farParams.COLLECTION_DISTANCE, farParams.COLLECTION_DISTANCE, farParams.DRIVE_TIMEOUT_LONG);
         objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, -farParams.COLLECTION_DISTANCE, -farParams.COLLECTION_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
 
         opMode.telemetry.addData("Step 5", objCommonFunc.getIMUYaw());
@@ -258,7 +258,7 @@ public class AutonMovement {
             
             // Step 9: Collect from second row
             objCommonFunc.TurnOnIntake(farParams.INTAKE_MAX_VELOCITY, farParams.BALLPUSHER_MAX_VELOCITY);
-            objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.COLLECTION_DISTANCE_ROW2, farParams.COLLECTION_DISTANCE_ROW2, farParams.DRIVE_TIMEOUT_LONG);
+            objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_INTAKE, farParams.COLLECTION_DISTANCE_ROW2, farParams.COLLECTION_DISTANCE_ROW2, farParams.DRIVE_TIMEOUT_LONG);
             objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, -farParams.COLLECTION_DISTANCE_ROW2, -farParams.COLLECTION_DISTANCE_ROW2, farParams.DRIVE_TIMEOUT_SHORT);
 
             opMode.telemetry.addData("Step 9", objCommonFunc.getIMUYaw());
