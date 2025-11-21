@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 
 public class CommonFunc_18954 {
@@ -232,20 +233,95 @@ public class CommonFunc_18954 {
         // Left:  +LF, -LB, -RF, +RB
         encoderDrive(speed, -inches, inches, inches, -inches, timeoutS);
     }
+    
 
     /**
      * Method to turn the robot. A positive angle turns left.
      */
     public void turn(double speed, double angle, double timeoutS) {
-        // Use robot's measured track width to compute arc length for each wheel.
-        // A positive angle turns left; negative turns right.
-        // The turning circle diameter approximated by the distance between left and right wheels (track width).
-        double track = CommonDefs.WHEEL_TRACK_INCHES;
-        double turnCircumference = Math.PI * track; // circumference = PI * diameter
-        double turnDistanceInches = (angle / 360.0) * turnCircumference;
+        // Prefer IMU-based closed-loop turning, with Limelight updates while turning.
+        // If IMU is not initialized, fall back to the encoder-based approximation.
+        if (imu == null) {
+            // Fallback: use geometric approximation based on track width
+            double track = CommonDefs.WHEEL_TRACK_INCHES;
+            double turnCircumference = Math.PI * track; // circumference = PI * diameter
+            double turnDistanceInches = (angle / 360.0) * turnCircumference;
+            encoderDrive(speed, -turnDistanceInches, turnDistanceInches, timeoutS);
+            return;
+        }
 
-        // left wheel moves backward for a left turn, right wheel moves forward
-        encoderDrive(speed, -turnDistanceInches, turnDistanceInches, timeoutS);
+        // Helper lambdas for angle normalization and shortest difference
+        java.util.function.DoubleUnaryOperator norm = (v) -> {
+            double a = v % 360.0;
+            if (a <= -180.0) a += 360.0;
+            if (a > 180.0) a -= 360.0;
+            return a;
+        };
+
+        java.util.function.BiFunction<Double, Double, Double> shortestDiff = (target, current) -> {
+            double diff = norm.applyAsDouble(target - current);
+            return diff;
+        };
+
+        // Read current heading (degrees)
+        double currentYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        double targetYaw = norm.applyAsDouble(currentYaw + angle);
+
+        final double HEADING_TOLERANCE_DEG = 1.5; // degrees
+        final double MIN_POWER = 0.10; // minimum power to overcome static friction
+        final double K_P = 0.015; // proportional gain (tune for your robot)
+        long startMs = System.currentTimeMillis();
+
+        // Ensure motors are in a mode suitable for setting power directly
+        setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        while (opMode.opModeIsActive() && ((System.currentTimeMillis() - startMs) < (long)(timeoutS * 1000))) {
+            currentYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            double error = shortestDiff.apply(targetYaw, currentYaw);
+
+            // If within tolerance, we're done
+            if (Math.abs(error) <= HEADING_TOLERANCE_DEG) break;
+
+            // P-controller output
+            double output = K_P * error;
+            double absOut = Math.min(Math.abs(output), Math.abs(speed));
+            if (absOut < MIN_POWER) absOut = MIN_POWER;
+
+            double leftPower = 0.0;
+            double rightPower = 0.0;
+            if (error > 0) {
+                // Need to turn left: left wheels reverse, right wheels forward
+                leftPower = -absOut;
+                rightPower = absOut;
+            } else {
+                // Need to turn right
+                leftPower = absOut;
+                rightPower = -absOut;
+            }
+
+            leftFront.setPower(leftPower);
+            leftBack.setPower(leftPower);
+            rightFront.setPower(rightPower);
+            rightBack.setPower(rightPower);
+
+            // Update Limelight (if present) to keep vision data fresh while turning
+            if (mLimeLightHandler != null) {
+                try {
+                    mLimeLightHandler.update(System.currentTimeMillis());
+                } catch (Exception ignored) {}
+            }
+
+            opMode.sleep(10);
+        }
+
+        // Stop motion
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
+
+        // Restore encoder mode
+        setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     /**
