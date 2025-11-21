@@ -7,7 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name = "Autonomous Blue Far", group = "Autonomous")
+@Autonomous(name = "Unused1", group = "Autonomous")
+@Disabled
 public class AutonBlueFar extends LinearOpMode {
 
     // ---------------- HARDWARE DECLARATION (Copied from TeleOp) ----------------
@@ -254,10 +255,11 @@ public class AutonBlueFar extends LinearOpMode {
      * Method to turn the robot. A positive angle turns left.
      */
     public void turn(double speed, double angle, double timeoutS) {
-        // This is a simplified turn. For more accuracy, use the IMU (Gyro).
-        // The distance each wheel travels is based on the turning radius.
-        double turnRadiusInches = 9.0; // Half the distance between the wheels
-        double turnDistanceInches = (angle / 360.0) * (2 * 3.1415 * turnRadiusInches);
+        // Compute turn arc distance using the robot's track width defined in CommonDefs
+        double track = CommonDefs.WHEEL_TRACK_INCHES;
+        double turnCircumference = Math.PI * track; // PI * diameter
+        double turnDistanceInches = (angle / 360.0) * turnCircumference;
+
         encoderDrive(speed, -turnDistanceInches, turnDistanceInches, timeoutS);
     }
 

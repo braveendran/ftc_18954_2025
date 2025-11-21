@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+
 public class CommonFunc_18954 {
 
 
@@ -32,6 +33,10 @@ public class CommonFunc_18954 {
 
 
     long MINIMAL_SLEEP_TIME=1;
+
+    IMU imu;
+    LimeLightHandler mLimeLightHandler;
+    DistanceDistVelocityProjection mDistanceDistVelocityProjection;
 
 
 
@@ -79,6 +84,13 @@ public class CommonFunc_18954 {
 
         // Stopper initial position
         stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
+
+        imu = hardwareMap.get(IMU.class, "imu");
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
+        mDistanceDistVelocityProjection = new DistanceDistVelocityProjection();
 
         telemetry.addData("Status", "Hardware Initialized");
         telemetry.update();
@@ -225,10 +237,14 @@ public class CommonFunc_18954 {
      * Method to turn the robot. A positive angle turns left.
      */
     public void turn(double speed, double angle, double timeoutS) {
-        // This is a simplified turn. For more accuracy, use the IMU (Gyro).
-        // The distance each wheel travels is based on the turning radius.
-        double turnRadiusInches = 9.0; // Half the distance between the wheels
-        double turnDistanceInches = (angle / 360.0) * (2 * 3.1415 * turnRadiusInches);
+        // Use robot's measured track width to compute arc length for each wheel.
+        // A positive angle turns left; negative turns right.
+        // The turning circle diameter approximated by the distance between left and right wheels (track width).
+        double track = CommonDefs.WHEEL_TRACK_INCHES;
+        double turnCircumference = Math.PI * track; // circumference = PI * diameter
+        double turnDistanceInches = (angle / 360.0) * turnCircumference;
+
+        // left wheel moves backward for a left turn, right wheel moves forward
         encoderDrive(speed, -turnDistanceInches, turnDistanceInches, timeoutS);
     }
 
