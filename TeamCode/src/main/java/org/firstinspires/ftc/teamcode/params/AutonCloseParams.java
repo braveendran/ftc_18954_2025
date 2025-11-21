@@ -10,7 +10,7 @@ public class AutonCloseParams {
 
     public final long TURN_TO_SHOOT_ROW1= -45;
     public final long TURN_TO_SHOOT_ROW2= -45;
-    public final long TURN_ANTI_CLOCKWISE_ERROR_DELTA=15;
+    public final long TURN_ANTI_CLOCKWISE_ERROR_DELTA=-7;
 
     public final long DIST_ROW1=12;
     public final long DIST_ROW2=29;

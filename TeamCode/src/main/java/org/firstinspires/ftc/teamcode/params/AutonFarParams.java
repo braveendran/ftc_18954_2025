@@ -27,7 +27,9 @@ public class AutonFarParams {
     
     // Turn angles
     public final double INITIAL_TURN_ANGLE = 35;
-    public final double TURN_TO_COLLECT = (90-INITIAL_TURN_ANGLE);
+    public final double TURN_TO_COLLECT_ABSOLUTE = (90);
+    public final double TURN_TO_COLLECT = (TURN_TO_COLLECT_ABSOLUTE-INITIAL_TURN_ANGLE);
+
     
     // Timeout values
     public final double DRIVE_TIMEOUT_SHORT = 10.0;

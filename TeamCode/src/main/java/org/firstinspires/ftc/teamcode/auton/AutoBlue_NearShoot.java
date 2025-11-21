@@ -35,40 +35,40 @@ public class AutoBlue_NearShoot extends LinearOpMode {
 
         // ---------------- AUTONOMOUS SEQUENCE STARTS HERE ----------------
 
-        // Step 1: Move forward away from the wall to get clearance for shooting.
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 70, 70, 5.0*2); // Move forward 30 inches
-
-        // Step 2: Turn towards the high goal. From the far side, this might be a 45-degree turn.
-        // A positive angle turns left.
-        //objCommonFunc.turn(params.TURN_SPEED, 35, 4.0*2);
-        objCommonFunc.turn(params.TURN_SPEED, 60, 4.0*2);
-
-        // Step 3: Shoot one Power Core into the high goal.
-        objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_COMENEAR_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
-
-        objCommonFunc.turn(params.TURN_SPEED, 60, 4.0*2);
-
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, 40,  5.0*2);
-        
-        objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
-
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 46, 46, 10*2);
-
-
-        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -46, -46, 5.0*2);
-
-        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW, 40, 5.0*2);
-
-        objCommonFunc.turn(params.TURN_SPEED, -60, 4.0*2);
-
-        objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_COMENEAR_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
-        objCommonFunc.TurnOffIntake();
-
-        objCommonFunc.turn(params.TURN_SPEED, 60, 4.0*2);
-        //Move out of the shooting
-        //objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 18, 18, 5.0*2);
-
-        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, 20, 5.0*2);
+//        // Step 1: Move forward away from the wall to get clearance for shooting.
+//        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 70, 70, 5.0*2); // Move forward 30 inches
+//
+//        // Step 2: Turn towards the high goal. From the far side, this might be a 45-degree turn.
+//        // A positive angle turns left.
+//        //objCommonFunc.turn(params.TURN_SPEED, 35, 4.0*2);
+//        objCommonFunc.turn(params.TURN_SPEED, 60, 4.0*2);
+//
+//        // Step 3: Shoot one Power Core into the high goal.
+//        objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_COMENEAR_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
+//
+//        objCommonFunc.turn(params.TURN_SPEED, 60, 4.0*2);
+//
+//        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, 40,  5.0*2);
+//
+//        objCommonFunc.TurnOnIntake(params.INTAKE_MAX_VELOCITY,params.BALLPUSHER_MAX_VELOCITY);
+//
+//        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 46, 46, 10*2);
+//
+//
+//        objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, -46, -46, 5.0*2);
+//
+//        objCommonFunc.strafe_right(params.DRIVE_SPEED_SLOW, 40, 5.0*2);
+//
+//        objCommonFunc.turn(params.TURN_SPEED, -60, 4.0*2);
+//
+//        objCommonFunc.shootPowerCore(params.LAUNCHER_BACKSHOOT_COMENEAR_RPM,false,params.BALLPUSHER_MAX_VELOCITY);
+//        objCommonFunc.TurnOffIntake();
+//
+//        objCommonFunc.turn(params.TURN_SPEED, 60, 4.0*2);
+//        //Move out of the shooting
+//        //objCommonFunc.encoderDrive(params.DRIVE_SPEED_SLOW, 18, 18, 5.0*2);
+//
+//        objCommonFunc.strafe_left(params.DRIVE_SPEED_SLOW, 20, 5.0*2);
 
 
 
