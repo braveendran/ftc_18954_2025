@@ -36,7 +36,7 @@ public class LimeLightHandler {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
         LLResult result = limelight.getLatestResult();
-        if (result.isValid()) {
+        if (result !=null && result.isValid()) {
             // Get the pose of the robot with respect to the blue alliance AprilTags
             last_botpose = result.getBotpose();
             last_updatedtime=current_ms;
