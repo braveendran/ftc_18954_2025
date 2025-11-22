@@ -291,7 +291,7 @@ public class Teleop_VelocityBased extends OpMode {
                 }
                 else {
 
-                    if (Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))
+                    if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >=600))
                     {
                         //push the ball in
                         currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;

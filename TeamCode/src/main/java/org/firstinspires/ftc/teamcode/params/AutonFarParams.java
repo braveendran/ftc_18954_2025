@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.params;
 public class AutonFarParams {
 
 
-    public final long LAUNCHER_POS1_RPM = 3600;
+    public final long LAUNCHER_POS1_RPM = 4300;
 
     public final long LAUNCHER_BACKSHOOT_COMENEAR_RPM=2900;
 
@@ -19,7 +19,7 @@ public class AutonFarParams {
     public final double TURN_SPEED = 0.3;
 
     public final double DIST_ROW1=18;
-    public final double DIST_ROW1_ADDITIONAL_RETURN=2;
+    public final double DIST_ROW1_ADDITIONAL_RETURN=4;
     public final double DIST_ROW2=42;
     
     // Drive distances

@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.params;
 public class AutonCloseParams {
 
 
-    public final long LAUNCHER_POS1_RPM = 2600;
+    public final long LAUNCHER_POS1_RPM = 3000;
 
     public final long INITIAL_BACKWARD_DIST = -42;
     public final long TURN_TO_COLLECT = -45;
