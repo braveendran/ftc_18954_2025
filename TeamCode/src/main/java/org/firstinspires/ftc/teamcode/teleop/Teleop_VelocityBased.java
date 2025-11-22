@@ -60,6 +60,7 @@ public class Teleop_VelocityBased extends OpMode {
     // ---------------- STOPPER SETTINGS ----------------
     public static final double GATE_DOWN_PUSHED_BALL_IN_SERVOPOS = 0.83;
     public static  final double GATE_UP_RAMP_FREE_SERVOPOS = 0.33;
+    public static final double GATE_UP_RAMP_FREE_SERVOPOS_AUTON=GATE_UP_RAMP_FREE_SERVOPOS;
 
 
     private enum GatePosition {
