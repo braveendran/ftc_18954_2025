@@ -129,7 +129,7 @@ public class CommonFunc_18954 {
     /**
      * A self-contained function to shoot 3 Power Core.
      */
-    public void shootPowerCore(long LauncherRPM,boolean unused ,double BallPusherVelocity) {
+    public void shootPowerCore(long LauncherRPM,boolean unused ,double BallPusherVelocity,boolean far) {
         //telemetry.addData("Shooter", "Starting sequence...");
         //telemetry.update();
 
@@ -151,8 +151,13 @@ public class CommonFunc_18954 {
             ballPusherMotor.setVelocity(3200);
             // Open the stopper to feed the Power Core
             stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
-            opMode.sleep(500); // Wait 0.5 seconds for the core to pass
-
+            if(far == true)
+            {
+                opMode.sleep(800);
+            }
+            else {
+                opMode.sleep(550); // Wait 0.5 seconds for the core to pass
+            }
             shooter_start_time = System.currentTimeMillis();
             while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Teleop_VelocityBased.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Teleop_VelocityBased.MAX_WAITTIME_ACHIEVING_RPM))
             {
