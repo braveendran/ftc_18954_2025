@@ -13,7 +13,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.logic.CommonCamera_18954;
+import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.logic.LimeLightHandler;
+import org.firstinspires.ftc.teamcode.logic.LocalizerDecode;
+import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
+
 
 
 @TeleOp(name = "TeleopVelocity", group = "Test")
@@ -25,7 +29,7 @@ public class Teleop_VelocityBased extends OpMode {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
-    private boolean isBlueTeam=true;
+    private CommonDefs.Alliance mAlliance=  CommonDefs.Alliance.BLUE;
 
 
 
@@ -36,8 +40,8 @@ public class Teleop_VelocityBased extends OpMode {
     private double speedMultiplier = NORMAL_SPEED;
 
     // ---------------- LAUNCHER SETTINGS ----------------
-    public static long  LAUNCHER_SHORTTANGE_RPM = 2850;
-    public static  long LAUNCHER_LONGRANGE_RPM = 3600;
+    public static long  LAUNCHER_SHORTTANGE_RPM = 3000;
+    public static  long LAUNCHER_LONGRANGE_RPM = 4300;
     public static final  long LAUNCHER_RPM_TOLERANCE = 100;
 
 
@@ -116,6 +120,9 @@ public class Teleop_VelocityBased extends OpMode {
     LimeLightHandler mLimeLightHandler;
     IMU imu;
 
+    private DriverIndicationLED mDriverIndicationLED;
+
+    private LocalizerDecode mLocalizer;
 
 
 
@@ -176,12 +183,25 @@ public class Teleop_VelocityBased extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
 
+
+
         if(ENABLE_CAMERA_DEFINE) {
             mCameraRef = new CommonCamera_18954(this);
         }
 
         if(ENABLE_LIMEIGHT_CAMERA) {
             mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
+        }
+
+        mDriverIndicationLED=new DriverIndicationLED(hardwareMap);
+
+        if(ENABLE_LIMEIGHT_CAMERA)
+        {
+            mLocalizer = new LocalizerDecode(mAlliance,mLimeLightHandler,mDriverIndicationLED);
+        }
+        else
+        {
+            mLocalizer = null;
         }
 
 

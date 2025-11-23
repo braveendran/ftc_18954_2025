@@ -17,7 +17,9 @@ public class LimeLightHandler {
     private long last_updatedtime;
 
 
+
     public LimeLightHandler(IMU imu, HardwareMap hardwareMap) {
+
         this.imu = imu;
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -38,7 +40,7 @@ public class LimeLightHandler {
         LLResult result = limelight.getLatestResult();
         if (result !=null && result.isValid()) {
             // Get the pose of the robot with respect to the blue alliance AprilTags
-            last_botpose = result.getBotpose();
+            last_botpose = result.getBotpose_MT2();
             last_updatedtime=current_ms;
             return last_botpose;
         }

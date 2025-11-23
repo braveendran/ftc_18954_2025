@@ -140,13 +140,18 @@ public class CommonFunc_18954 {
         if(!bShooterRunning) {
             StartShooter(LauncherRPM,BallPusherVelocity);
         }
-
+        intakeMotor.setVelocity(0);
         stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
         opMode.sleep(400);
 
 
 
         for (int i=0;i<4;i++) {
+
+            if(i >= 2)
+            {
+                intakeMotor.setVelocity(3200);
+            }
 
             ballPusherMotor.setVelocity(3200);
             // Open the stopper to feed the Power Core
@@ -161,7 +166,7 @@ public class CommonFunc_18954 {
             stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
             if(far == true)
             {
-                opMode.sleep(800);
+                opMode.sleep(1200);
             }
             else {
                 opMode.sleep(550); // Wait 0.5 seconds for the core to pass
