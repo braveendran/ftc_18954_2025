@@ -122,7 +122,7 @@ public class Teleop_VelocityBased extends OpMode {
 
     private DriverIndicationLED mDriverIndicationLED;
 
-    private LocalizerDecode mLocalizer;
+    //private LocalizerDecode mLocalizer;
 
 
 
@@ -195,14 +195,14 @@ public class Teleop_VelocityBased extends OpMode {
 
         mDriverIndicationLED=new DriverIndicationLED(hardwareMap);
 
-        if(ENABLE_LIMEIGHT_CAMERA)
-        {
-            mLocalizer = new LocalizerDecode(mAlliance,mLimeLightHandler,mDriverIndicationLED);
-        }
-        else
-        {
-            mLocalizer = null;
-        }
+//        if(ENABLE_LIMEIGHT_CAMERA)
+//        {
+//            mLocalizer = new LocalizerDecode(mAlliance,mLimeLightHandler,mDriverIndicationLED);
+//        }
+//        else
+//        {
+//            mLocalizer = null;
+//        }
 
 
         telemetry.addData("Status", "Initialized");
