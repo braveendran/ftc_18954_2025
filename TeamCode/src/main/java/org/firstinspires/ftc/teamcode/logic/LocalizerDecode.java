@@ -57,14 +57,14 @@ public class LocalizerDecode {
         // These are placeholder values and should be tuned for your specific needs.
         if (alliance == Alliance.BLUE) {
             // Example Pose 1: Aligned to score on the backdrop from the Blue side
-            validPoses.add(new ValidPose(36.0, 60.0, 3.0, 90.0, 2.0));
+            validPoses.add(new ValidPose(-2, 1, 0.2, 0, 5.0));
             // Example Pose 2: Aligned to pick up pixels from the Blue wing
-            validPoses.add(new ValidPose(-58.0, 36.0, 3.0, 180.0, 5.0));
+            validPoses.add(new ValidPose(-3, 0, 0.2, 22, 5.0));
         } else { // RED
             // Example Pose 1: Aligned to score on the backdrop from the Red side
-            validPoses.add(new ValidPose(36.0, -60.0, 3.0, -90.0, 2.0));
+            validPoses.add(new ValidPose(-3, 0, 3.0, -39, 10.0));
             // Example Pose 2: Aligned to pick up pixels from the Red wing
-            validPoses.add(new ValidPose(-58.0, -36.0, 3.0, 180.0, 5.0));
+            validPoses.add(new ValidPose(-2, 1, 3.0, 18, 10.0));
         }
 
         // Initialize LED to a neutral/off state (gray)
@@ -114,7 +114,7 @@ public class LocalizerDecode {
             }
         } else {
             // No AprilTag visible, so we are not aligned. Set LED to red.
-            driverIndicationLED.setRed();
+            driverIndicationLED.setBlue();
         }
     }
 }

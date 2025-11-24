@@ -1,5 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import java.util.function.Supplier;
+
+import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -9,6 +24,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
@@ -29,7 +46,13 @@ public class Teleop_VelocityBased extends OpMode {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
-    private CommonDefs.Alliance mAlliance=  CommonDefs.Alliance.BLUE;
+    private CommonDefs.Alliance mAlliance=  CommonDefs.Alliance.RED;
+
+    private Follower follower;
+    public static Pose startingPose; //See ExampleAuto to understand how to use this
+
+    private Supplier<PathChain> pathChain;
+    private TelemetryManager telemetryM;
 
 
 
@@ -136,6 +159,16 @@ public class Teleop_VelocityBased extends OpMode {
     @Override
     public void init() {
 
+        startingPose= new Pose(0,0);
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        follower.update();
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                .addPath(new Path(new BezierLine(follower::getPose, new Pose(48, 48))))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(90), 0.8))
+                .build();
+
 
         // Hardware mapping
         leftFront = hardwareMap.dcMotor.get("FrontLeft");
@@ -208,11 +241,20 @@ public class Teleop_VelocityBased extends OpMode {
         telemetry.addData("Status", "Initialized");
     }
 
+    @Override
+    public void start() {
+        //The parameter controls whether the Follower should use break mode on the motors (using it is recommended).
+        //In order to use float mode, add .useBrakeModeInTeleOp(true); to your Drivetrain Constants in Constant.java (for Mecanum)
+        //If you don't pass anything in, it uses the default (false)
+        follower.startTeleopDrive();
+    }
+
     // ---------------- LOOP METHOD ----------------
     @Override
     public void loop() {
 
-        Pose3D pose;
+        Pose3D pose = null;
+        long time_since_lastupdate_pose=0;
         double diff_percent=0;
 
         //----------------- CAMERA Feedback -----------------
@@ -220,9 +262,22 @@ public class Teleop_VelocityBased extends OpMode {
             pose = mCameraRef.telemetryAprilTag();
         }
 
+        mLocalizer.update(System.currentTimeMillis());
+
         if(ENABLE_LIMEIGHT_CAMERA) {
-            pose = mLimeLightHandler.update(System.currentTimeMillis());
+            pose = mLimeLightHandler.getLast_botpose();
+            time_since_lastupdate_pose=(System.currentTimeMillis()-mLimeLightHandler.getLast_updatedTime());
         }
+
+        //Call this once per loop
+        follower.update();
+        telemetryM.update();
+
+
+
+
+
+
 
 
         // ---------------- DRIVE CONTROL ----------------
@@ -360,7 +415,7 @@ public class Teleop_VelocityBased extends OpMode {
         intake_spitout=gamepad1.left_bumper;
         intakeOn = gamepad1.right_bumper;
         if(intakeOn) {
-            intakeMotor.setPower(1.0);
+            //intakeMotor.setPower(1.0);
         }
         else if(intake_spitout) {
             intakeMotor.setPower(-0.4);
@@ -372,7 +427,7 @@ public class Teleop_VelocityBased extends OpMode {
         // ---------------- BALL PUSHER ----------------
         ballPusherOn = launcherOn || intakeOn ;
         if(ballPusherOn) {
-            ballPusherMotor.setPower(1.0);
+            //ballPusherMotor.setPower(1.0);
         }
         else if(intake_spitout) {
             ballPusherMotor.setPower(-0.4);
@@ -485,24 +540,25 @@ public class Teleop_VelocityBased extends OpMode {
 
 
         // ---------------- TELEMETRY ----------------
-        telemetry.addData("Speed Multiplier", String.format("%.2f", speedMultiplier));
-        telemetry.addData("GateClosed", currGatePos.toString());
-        telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
-        telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
-        telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
-        telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
-        telemetry.addData("Shooter State", shooterState.toString());
-        telemetry.addData("Launcher RPM",getLauncherRpm());
-        telemetry.addData("Differential",diff_percent);
-        telemetry.addData("RPM Based Shooting",!ForceShoot_WithoutRPM);
-        telemetry.addData("Short Range RPM",LAUNCHER_SHORTTANGE_RPM);
-        telemetry.addData("Long Range RPM",LAUNCHER_LONGRANGE_RPM);
-        telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
-        telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
-        telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
+//        telemetry.addData("Speed Multiplier", String.format("%.2f", speedMultiplier));
+//        telemetry.addData("GateClosed", currGatePos.toString());
+//        telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
+//        telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
+//        telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
+//        telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
+//        telemetry.addData("Shooter State", shooterState.toString());
+//        telemetry.addData("Launcher RPM",getLauncherRpm());
+//        telemetry.addData("Differential",diff_percent);
+//        telemetry.addData("RPM Based Shooting",!ForceShoot_WithoutRPM);
+//        telemetry.addData("Short Range RPM",LAUNCHER_SHORTTANGE_RPM);
+//        telemetry.addData("Long Range RPM",LAUNCHER_LONGRANGE_RPM);
+//        telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
+//        telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
+//        telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
 
         if(ENABLE_LIMEIGHT_CAMERA){
             if(pose != null) {
+                telemetry.addData("TimeSince:",time_since_lastupdate_pose);
                 telemetry.addData("X", pose.getPosition().x);
                 telemetry.addData("Y", pose.getPosition().y);
                 telemetry.addData("Z", pose.getPosition().z);
@@ -516,14 +572,20 @@ public class Teleop_VelocityBased extends OpMode {
         if(ENABLE_CAMERA_DEFINE) {
 
             if (pose != null) {
-                telemetry.addData("X", pose.getPosition().x);
-                telemetry.addData("Y", pose.getPosition().y);
-                telemetry.addData("Z", pose.getPosition().z);
-                telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
-                telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
-                telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+                telemetry.addData("C.X", pose.getPosition().x);
+                telemetry.addData("C.Y", pose.getPosition().y);
+                telemetry.addData("C.Z", pose.getPosition().z);
+                telemetry.addData("C.Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
+                //telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+                //telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
             }
         }
+
+        telemetry.addData("P.position", follower.getPose());
+        telemetry.addData("P.velocity", follower.getVelocity());
+
+        telemetryM.debug("position", follower.getPose());
+        telemetryM.debug("velocity", follower.getVelocity());
 
         telemetry.update();
     }

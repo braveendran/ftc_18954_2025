@@ -14,10 +14,10 @@ public class DriverIndicationLED {
 
     // These values correspond to solid colors on the REV Blinkin LED Driver.
     // The values are based on the standard servo PWM range (0.0 to 1.0).
-    public static final double PATTERN_RED = 0.61;
-    public static final double PATTERN_GREEN = 0.71;
-    public static final double PATTERN_BLUE = 0.81;
-    public static final double PATTERN_GRAY = 0.95; // A good pattern for "off" or "default"
+    public static final double PATTERN_RED = 0.3;
+    public static final double PATTERN_GREEN = 0.5;
+    public static final double PATTERN_BLUE = 0.6;
+    public static final double PATTERN_GRAY = 0.9; // A good pattern for "off" or "default"
 
     /**
      * Initializes the Blinkin LED driver.

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -12,9 +12,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.logic.CommonCamera_18954;
-
+import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
 @TeleOp(name = "TestCode", group = "Test")
-@Disabled
 public class TestCode extends OpMode {
 
     // ---------------- HARDWARE DECLARATION ----------------
@@ -109,7 +108,10 @@ public class TestCode extends OpMode {
     private long Target_RPM_Shooting=0;
 
 
+    DriverIndicationLED ledController;
+    double led_value;
 
+    long last_updatedtime=0;
 
 
 
@@ -119,6 +121,9 @@ public class TestCode extends OpMode {
     // ---------------- INIT METHOD ----------------
     @Override
     public void init() {
+
+        ledController=new DriverIndicationLED(hardwareMap);
+        led_value=0;
 
 
         // Hardware mapping
@@ -135,9 +140,12 @@ public class TestCode extends OpMode {
 
         // Motor directions
         leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
         leftBack.setDirection(DcMotor.Direction.FORWARD);
+
         rightBack.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+
+
         ballPusherMotor.setDirection(DcMotor.Direction.REVERSE);
         launcherMotor.setDirection(DcMotor.Direction.REVERSE);
         //launcherBottomMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -207,6 +215,27 @@ public class TestCode extends OpMode {
         else {
             leftBack.setPower(0);
         }
+
+        if(System.currentTimeMillis() > last_updatedtime + 500) {
+            if (gamepad1.dpad_up) {
+                led_value += 0.1;
+                last_updatedtime=System.currentTimeMillis();
+
+            } else if (gamepad1.dpad_down) {
+                led_value -= 0.1;
+                last_updatedtime=System.currentTimeMillis();
+            }
+        }
+        ledController.setPattern(led_value);
+
+        telemetry.addData("led_value",led_value);
+        telemetry.update();
+
+
+
+
+
+
 
     }
 }

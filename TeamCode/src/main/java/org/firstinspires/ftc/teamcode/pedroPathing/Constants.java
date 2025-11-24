@@ -39,7 +39,7 @@ public class Constants {
                             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
                     )
             )
-            .forwardPodY(3.25)
+            .forwardPodY(2.5)
             .strafePodX(4.5);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
