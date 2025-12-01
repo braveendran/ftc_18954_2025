@@ -24,6 +24,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import android.content.SharedPreferences;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -159,9 +160,14 @@ public class Teleop_VelocityBased extends OpMode {
     @Override
     public void init() {
 
-        startingPose= new Pose(0,0);
+        // Load pose from autonomous if available
+        startingPose = loadPoseFromSharedPreferences();
+        if (startingPose == null) {
+            startingPose = new Pose(0,0); // Default pose if no autonomous data
+        }
+        
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startingPose == null ? new Pose() : startingPose);
+        follower.setStartingPose(startingPose);
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
@@ -240,6 +246,7 @@ public class Teleop_VelocityBased extends OpMode {
 
 
         telemetry.addData("Status", "Initialized");
+        telemetry.update();
     }
 
     @Override
@@ -618,6 +625,47 @@ public class Teleop_VelocityBased extends OpMode {
         }
         // Return 0 if it's not a DcMotorEx or if something is wrong
         return false;
-
+    }
+    
+    /**
+     * Load robot pose from SharedPreferences saved by autonomous
+     * @return Pose object if found and recent (within 5 minutes), null otherwise
+     */
+    private Pose loadPoseFromSharedPreferences() {
+        try {
+            SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("robot_state", 0);
+            
+            // Check if pose data exists
+            if (!prefs.contains("pose_x")) {
+                telemetry.addData("Pose Load", "No autonomous pose found");
+                return null;
+            }
+            
+            // Check if the pose is recent (within 5 minutes)
+            long timestamp = prefs.getLong("pose_timestamp", 0);
+            long currentTime = System.currentTimeMillis();
+            long maxAge = 5 * 60 * 1000; // 5 minutes in milliseconds
+            
+            if (currentTime - timestamp > maxAge) {
+                telemetry.addData("Pose Load", "Autonomous pose too old, using default");
+                return null;
+            }
+            
+            // Load pose data
+            float x = prefs.getFloat("pose_x", 0f);
+            float y = prefs.getFloat("pose_y", 0f);
+            float heading = prefs.getFloat("pose_heading", 0f);
+            
+            Pose loadedPose = new Pose(x, y, heading);
+            telemetry.addData("Pose Loaded", "X:%.1f Y:%.1f H:%.1f°", 
+                             x, y, Math.toDegrees(heading));
+            telemetry.addData("Pose Age", "%.1f seconds", (currentTime - timestamp) / 1000.0);
+            
+            return loadedPose;
+            
+        } catch (Exception e) {
+            telemetry.addData("Pose Load Error", e.getMessage());
+            return null;
+        }
     }
 }
