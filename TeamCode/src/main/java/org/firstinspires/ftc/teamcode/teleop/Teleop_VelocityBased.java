@@ -668,4 +668,44 @@ public class Teleop_VelocityBased extends OpMode {
             return null;
         }
     }
+    
+    /**
+     * Load alliance and configuration from SharedPreferences saved by autonomous
+     */
+    private void loadAllianceFromSharedPreferences() {
+        try {
+            SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("robot_state", 0);
+            
+            // Check if configuration data exists
+            if (!prefs.contains("alliance")) {
+                telemetry.addData("Alliance Load", "No autonomous config found, using default RED");
+                return;
+            }
+            
+            // Check if the data is recent (within 5 minutes)
+            long timestamp = prefs.getLong("pose_timestamp", 0);
+            long currentTime = System.currentTimeMillis();
+            long maxAge = 5 * 60 * 1000; // 5 minutes in milliseconds
+            
+            if (currentTime - timestamp > maxAge) {
+                telemetry.addData("Alliance Load", "Autonomous config too old, using default RED");
+                return;
+            }
+            
+            // Load alliance and configuration data
+            String allianceStr = prefs.getString("alliance", "RED");
+            String positionStr = prefs.getString("position", "CLOSE");
+            String rowsStr = prefs.getString("rows", "1");
+            
+            // Update alliance setting
+            mAlliance = "BLUE".equals(allianceStr) ? CommonDefs.Alliance.BLUE : CommonDefs.Alliance.RED;
+            
+            telemetry.addData("Config Loaded", "%s %s %sROW", allianceStr, positionStr, rowsStr);
+            telemetry.addData("Alliance Set", mAlliance == CommonDefs.Alliance.BLUE ? "BLUE" : "RED");
+            
+        } catch (Exception e) {
+            telemetry.addData("Alliance Load Error", e.getMessage());
+            mAlliance = CommonDefs.Alliance.RED; // Default fallback
+        }
+    }
 }

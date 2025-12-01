@@ -229,6 +229,13 @@ public class AutonUnified extends LinearOpMode {
             editor.putFloat("pose_y", (float) finalPose.getY());
             editor.putFloat("pose_heading", (float) finalPose.getHeading());
             editor.putLong("pose_timestamp", System.currentTimeMillis());
+            
+            // Save alliance information
+            editor.putString("alliance", selectedAlliance == CommonDefs.Alliance.BLUE ? "BLUE" : "RED");
+            editor.putString("position", selectedPosition == CommonDefs.PositionType.CLOSE ? "CLOSE" : "FAR");
+            editor.putString("rows", selectedRows == CommonDefs.AutonRowsToCollect.ROS_1 ? "1" : 
+                            selectedRows == CommonDefs.AutonRowsToCollect.ROS_2 ? "2" : "3");
+            
             editor.apply();
             
             telemetry.addData("Pose Saved", "X:%.1f Y:%.1f H:%.1f°", 
