@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
+import org.firstinspires.ftc.teamcode.logic.RobotState;
 import org.firstinspires.ftc.teamcode.params.AutonCloseParams;
 import org.firstinspires.ftc.teamcode.params.AutonFarParams;
 import com.pedropathing.follower.Follower;
@@ -280,13 +281,13 @@ public class AutonMovement {
         this.farParams = new AutonFarParams();
         this.objCommonFunc = new CommonFunc_18954(opMode);
 
-        follower = Constants.createFollower(hardwareMap);
+        follower = Constants.createFollower(opMode.hardwareMap);
 
         Paths = new MovementPaths(alliance, positionType, rowsToCollect, follower);
         this.autonState = CommonDefs.AutonState.AUTON_MOVE_TO_SHOOT;
     }
 
-    public runAutonSequence_PedroPathing() {
+    public void runAutonSequence_PedroPathing() {
         // Initialize starting pose based on alliance and position type
         if (alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
             startingPose = CommonDefs.BLUE_CLOSE_START_POSE;
@@ -330,6 +331,9 @@ public class AutonMovement {
             }
             
         }
+        
+        // Save final pose for TeleOp continuation
+        RobotState.setLastAutonPose(follower.getPose());
     }
     
     public void runAutonomousSequence() {
@@ -471,6 +475,12 @@ public class AutonMovement {
         // Completion telemetry
         opMode.telemetry.addData("Autonomous", "Complete");
         opMode.telemetry.update();
+        
+        // Save final pose for TeleOp continuation (encoder-based auton)
+        if (!UsePedroPathing_Auton && follower != null) {
+            RobotState.setLastAutonPose(follower.getPose());
+        }
+        
         opMode.sleep((int)closeParams.SLEEP_TIME);
     }
     
@@ -598,6 +608,12 @@ public class AutonMovement {
         // Completion telemetry
         opMode.telemetry.addData("Autonomous", "Complete");
         opMode.telemetry.update();
+        
+        // Save final pose for TeleOp continuation (encoder-based auton)
+        if (!UsePedroPathing_Auton && follower != null) {
+            RobotState.setLastAutonPose(follower.getPose());
+        }
+        
         opMode.sleep((int)farParams.SLEEP_TIME);
     }
 }
