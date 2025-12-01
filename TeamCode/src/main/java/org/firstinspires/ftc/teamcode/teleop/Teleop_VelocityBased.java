@@ -166,6 +166,9 @@ public class Teleop_VelocityBased extends OpMode {
             startingPose = new Pose(0,0); // Default pose if no autonomous data
         }
         
+        // Load alliance information from autonomous
+        loadAllianceFromSharedPreferences();
+        
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startingPose);
         follower.update();

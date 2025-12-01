@@ -240,6 +240,11 @@ public class AutonUnified extends LinearOpMode {
             
             telemetry.addData("Pose Saved", "X:%.1f Y:%.1f H:%.1f°", 
                              finalPose.getX(), finalPose.getY(), Math.toDegrees(finalPose.getHeading()));
+            telemetry.addData("Config Saved", "%s %s %s", 
+                             selectedAlliance == CommonDefs.Alliance.BLUE ? "BLUE" : "RED",
+                             selectedPosition == CommonDefs.PositionType.CLOSE ? "CLOSE" : "FAR",
+                             selectedRows == CommonDefs.AutonRowsToCollect.ROS_1 ? "1ROW" : 
+                             selectedRows == CommonDefs.AutonRowsToCollect.ROS_2 ? "2ROW" : "3ROW");
             telemetry.update();
         }
     }
