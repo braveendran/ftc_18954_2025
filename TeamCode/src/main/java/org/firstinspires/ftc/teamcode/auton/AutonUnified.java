@@ -2,9 +2,12 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import android.content.SharedPreferences;
 
 import org.firstinspires.ftc.teamcode.auton.AutonMovement;
 import org.firstinspires.ftc.teamcode.logic.CommonDefs;
+import org.firstinspires.ftc.teamcode.logic.RobotState;
+import com.pedropathing.geometry.Pose;
 
 /**
  * Unified Autonomous OpMode with menu selection
@@ -53,6 +56,9 @@ public class AutonUnified extends LinearOpMode {
             // Create and run autonomous sequence with selected parameters
             AutonMovement autonMovement = new AutonMovement(this, selectedAlliance, selectedPosition, selectedRows);
             autonMovement.runAutonomousSequence();
+            
+            // Save final pose to SharedPreferences for TeleOp
+            savePoseToSharedPreferences();
         } else if (opModeIsActive() && currentStep < 3) {
             // If START was pressed before completing all selections
             telemetry.addData("Error", "Complete all selections before starting!");
@@ -210,6 +216,24 @@ public class AutonUnified extends LinearOpMode {
             return "2 ROWS";
         } else {
             return "3 ROWS";
+        }
+    }
+    
+    private void savePoseToSharedPreferences() {
+        // Get final pose from static holder
+        Pose finalPose = RobotState.getLastAutonPose();
+        if (finalPose != null) {
+            SharedPreferences prefs = hardwareMap.appContext.getSharedPreferences("robot_state", 0);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putFloat("pose_x", (float) finalPose.getX());
+            editor.putFloat("pose_y", (float) finalPose.getY());
+            editor.putFloat("pose_heading", (float) finalPose.getHeading());
+            editor.putLong("pose_timestamp", System.currentTimeMillis());
+            editor.apply();
+            
+            telemetry.addData("Pose Saved", "X:%.1f Y:%.1f H:%.1f°", 
+                             finalPose.getX(), finalPose.getY(), Math.toDegrees(finalPose.getHeading()));
+            telemetry.update();
         }
     }
 }
