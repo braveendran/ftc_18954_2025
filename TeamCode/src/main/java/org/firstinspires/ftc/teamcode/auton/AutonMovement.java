@@ -6,6 +6,243 @@ import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
 import org.firstinspires.ftc.teamcode.params.AutonCloseParams;
 import org.firstinspires.ftc.teamcode.params.AutonFarParams;
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.HeadingInterpolator;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
+import com.bylazar.telemetry.TelemetryManager;
+import java.util.function.Supplier;
+import java.util.List;
+import java.util.ArrayList;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+private class MovementPaths {
+    // This class can be expanded to include path definitions if needed
+    //private Supplier<PathChain> pathChain_start_to_shoot, shoot_to_collect_row1, collect_row1_to_shoot, shoot_to_collect_row2, collect_row2_to_shoot, shoot_to_park;
+    
+    //create a list of path chain
+    private List<Supplier<PathChain>> pathChains;
+    private Follower follower;
+
+    
+
+    public MovementPaths(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType, CommonDefs.AutonRowsToCollect rowsToCollect, Follower follower) {
+        this.follower = follower;
+        // Initialize pathChains based on alliance, positionType, and rowsToCollect
+        pathChains = new ArrayList<>();
+        // Example: Add path chains based on the parameters
+        pathChains.add(StartingPose_To_Shoot(alliance, positionType));
+        pathChains.add(Shoot_To_Row1Start(alliance, positionType));
+        pathChains.add(Row1Start_Row1Collect(alliance, positionType));
+        pathChains.add(Row1Collect_Shoot(alliance, positionType));
+        if (rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_2 || rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_3) {
+            pathChains.add(Shoot_To_Row2Start(alliance, positionType));
+            pathChains.add(Row2Start_Row2Collect(alliance, positionType));
+            pathChains.add(Row2Collect_Shoot(alliance, positionType));
+        }
+        if(rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_3) {
+            pathChains.add(Shoot_To_Row3Start(alliance, positionType));
+            pathChains.add(Row3Start_Row3Collect(alliance, positionType));
+            pathChains.add(Row3Collect_Shoot(alliance, positionType));
+        }
+        pathChains.add(Shoot_To_Park(alliance, positionType));
+    
+    }   
+
+    // Placeholder methods for creating path chains
+    private Supplier<PathChain> StartingPose_To_Shoot(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose= CommonDefs.BLUE_CLOSE_SHOOT_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose= CommonDefs.BLUE_FAR_SHOOT_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose= CommonDefs.RED_CLOSE_SHOOT_POSE;
+        } else {
+            targetPose= CommonDefs.RED_FAR_SHOOT_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    // Additional methods for other path segments would follow a similar pattern
+    private Supplier<PathChain> Shoot_To_Collect_Row1(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose= CommonDefs.BLUE_ROW1_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose= CommonDefs.BLUE_ROW3_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose= CommonDefs.RED_ROW1_POSE;
+        } else {
+            targetPose= CommonDefs.RED_ROW3_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Row1Start_Row1Collect(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose= CommonDefs.BLUE_ROW1_COLLECT_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose= CommonDefs.BLUE_ROW3_COLLECT_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose= CommonDefs.RED_ROW1_COLLECT_POSE;
+        } else {
+            targetPose= CommonDefs.RED_ROW3_COLLECT_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Shoot_To_Row2Start(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.BLUE_ROW2_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose = CommonDefs.BLUE_ROW2_POSE; // reuse or adjust as appropriate
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.RED_ROW2_POSE;
+        } else {
+            targetPose = CommonDefs.RED_ROW2_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Row2Start_Row2Collect(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.BLUE_ROW2_COLLECT_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose = CommonDefs.BLUE_ROW2_COLLECT_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.RED_ROW2_COLLECT_POSE;
+        } else {
+            targetPose = CommonDefs.RED_ROW2_COLLECT_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Row2Collect_Shoot(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.BLUE_CLOSE_SHOOT_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose = CommonDefs.BLUE_FAR_SHOOT_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.RED_CLOSE_SHOOT_POSE;
+        } else {
+            targetPose = CommonDefs.RED_FAR_SHOOT_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Shoot_To_Row3Start(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE) {
+            targetPose = CommonDefs.BLUE_ROW3_POSE;
+        } else {
+            targetPose = CommonDefs.RED_ROW3_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Row3Start_Row3Collect(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE) {
+            targetPose = CommonDefs.BLUE_ROW3_COLLECT_POSE;
+        } else {
+            targetPose = CommonDefs.RED_ROW3_COLLECT_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Row3Collect_Shoot(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        return Row2Collect_Shoot(alliance, positionType);
+    }
+
+    private Supplier<PathChain> Shoot_To_Park(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.BLUE_PARK_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose = CommonDefs.BLUE_PARK_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.RED_PARK_POSE;
+        } else {
+            targetPose = CommonDefs.RED_PARK_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    //Continue with other path segments similarly...
+    
+    
+}
 public class AutonMovement {
     
     private LinearOpMode opMode;
@@ -16,15 +253,25 @@ public class AutonMovement {
     private CommonDefs.PositionType positionType;
     private boolean twoRowMode;
 
+    private Follower follower;
+    public static Pose startingPose;
+    private TelemetryManager telemetryM;
+
+    private MovementPaths Paths;
+
+    private CommonDefs.AutonState autonState;
+    private final boolean UsePedroPathing_Auton = true;
+    
+
 
     
     // Constructor for Close positioning
-    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
-        this(opMode, alliance, positionType, false);
-    }
+    // public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+    //     this(opMode, alliance, positionType, false);
+    // }
     
     // Constructor with two-row mode option
-    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType, boolean twoRowMode) {
+    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType, CommonDefs.AutonRowsToCollect rowsToCollect) {
         this.opMode = opMode;
         this.alliance = alliance;
         this.positionType = positionType;
@@ -32,13 +279,69 @@ public class AutonMovement {
         this.closeParams = new AutonCloseParams();
         this.farParams = new AutonFarParams();
         this.objCommonFunc = new CommonFunc_18954(opMode);
+
+        follower = Constants.createFollower(hardwareMap);
+
+        Paths = new MovementPaths(alliance, positionType, rowsToCollect, follower);
+        this.autonState = CommonDefs.AutonState.AUTON_MOVE_TO_SHOOT;
+    }
+
+    public runAutonSequence_PedroPathing() {
+        // Initialize starting pose based on alliance and position type
+        if (alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            startingPose = CommonDefs.BLUE_CLOSE_START_POSE;
+        } else if (alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            startingPose = CommonDefs.BLUE_FAR_START_POSE;
+        } else if (alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            startingPose = CommonDefs.RED_CLOSE_START_POSE;
+        } else {
+            startingPose = CommonDefs.RED_FAR_START_POSE;
+        }
+
+        follower.setStartingPose(startingPose);
+        follower.update();
+
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        // Wait for start
+        opMode.waitForStart();
+
+        // Follow each path segment in sequence
+        for (Supplier<PathChain> pathChainSupplier : Paths.getPathChains()) {
+            follower.followPath(pathChainSupplier.get());
+            while (follower.isBusy() && opMode.opModeIsActive()) {
+                follower.update();
+                telemetryM.update();
+            }
+
+            if(this.autonState == CommonDefs.AutonState.AUTON_MOVE_TO_SHOOT) {
+                this.autonState = CommonDefs.AutonState.AUTON_SHOOT;
+                // Shooting logic here
+                objCommonFunc.shootPowerCore();
+                this.autonState = CommonDefs.AutonState.AUTON_MOVE_TO_COLLECT;
+            } else if(this.autonState == CommonDefs.AutonState.AUTON_MOVE_TO_COLLECT) {
+                // Collection logic here
+                objCommonFunc.TurnOnIntake();
+                this.autonState = CommonDefs.AutonState.AUTON_COLLECT_BALLS;
+            }
+            else if(this.autonState == CommonDefs.AutonState.AUTON_COLLECT_BALLS) {
+                //objCommonFunc.TurnOffIntake();
+                this.autonState = CommonDefs.AutonState.AUTON_MOVE_TO_SHOOT;
+            }
+            
+        }
     }
     
     public void runAutonomousSequence() {
-        if (positionType == CommonDefs.PositionType.CLOSE) {
-            runCloseAutonomousSequence();
+
+        if(UsePedroPathing_Auton) {
+            runAutonSequence_PedroPathing();
         } else {
+            if (positionType == CommonDefs.PositionType.CLOSE) {
+                runCloseAutonomousSequence();
+            } else {
             runFarAutonomousSequence();
+            }
         }
     }
     
