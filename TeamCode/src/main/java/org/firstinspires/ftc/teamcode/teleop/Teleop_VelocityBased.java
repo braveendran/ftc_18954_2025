@@ -40,8 +40,8 @@ public class Teleop_VelocityBased extends OpMode {
     private double speedMultiplier = NORMAL_SPEED;
 
     // ---------------- LAUNCHER SETTINGS ----------------
-    public static long  LAUNCHER_SHORTTANGE_RPM = 3000;
-    public static  long LAUNCHER_LONGRANGE_RPM = 4300;
+    public static long  LAUNCHER_SHORTTANGE_RPM = 2800;
+    public static  long LAUNCHER_LONGRANGE_RPM = 5000;
     public static final  long LAUNCHER_RPM_TOLERANCE = 100;
 
 
