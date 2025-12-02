@@ -39,7 +39,7 @@ class MovementPaths {
         pathChains = new ArrayList<>();
         // Example: Add path chains based on the parameters
         pathChains.add(StartingPose_To_Shoot(alliance, positionType));
-        pathChains.add(Shoot_To_Collect_Row1(alliance, positionType));
+        pathChains.add(Shoot_To_Row1Start(alliance, positionType));
         pathChains.add(Row1Start_Row1Collect(alliance, positionType));
         pathChains.add(Row1Collect_Shoot(alliance, positionType));
         if (rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_2 || rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_3) {
@@ -80,7 +80,7 @@ class MovementPaths {
     }
 
     // Additional methods for other path segments would follow a similar pattern
-    private Supplier<PathChain> Shoot_To_Collect_Row1(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+    private Supplier<PathChain> Shoot_To_Row1Start(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
         Supplier<PathChain> pathChain;
         Pose targetPose;
         if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
