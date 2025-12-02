@@ -18,8 +18,9 @@ import java.util.function.Supplier;
 import java.util.List;
 import java.util.ArrayList;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import com.bylazar.telemetry.PanelsTelemetry;
 
-private class MovementPaths {
+class MovementPaths {
     // This class can be expanded to include path definitions if needed
     //private Supplier<PathChain> pathChain_start_to_shoot, shoot_to_collect_row1, collect_row1_to_shoot, shoot_to_collect_row2, collect_row2_to_shoot, shoot_to_park;
     
@@ -27,7 +28,10 @@ private class MovementPaths {
     private List<Supplier<PathChain>> pathChains;
     private Follower follower;
 
-    
+    public List<Supplier<PathChain>> getPathChains()
+    {
+        return pathChains;
+    }
 
     public MovementPaths(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType, CommonDefs.AutonRowsToCollect rowsToCollect, Follower follower) {
         this.follower = follower;
@@ -35,7 +39,7 @@ private class MovementPaths {
         pathChains = new ArrayList<>();
         // Example: Add path chains based on the parameters
         pathChains.add(StartingPose_To_Shoot(alliance, positionType));
-        pathChains.add(Shoot_To_Row1Start(alliance, positionType));
+        pathChains.add(Shoot_To_Collect_Row1(alliance, positionType));
         pathChains.add(Row1Start_Row1Collect(alliance, positionType));
         pathChains.add(Row1Collect_Shoot(alliance, positionType));
         if (rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_2 || rowsToCollect == CommonDefs.AutonRowsToCollect.ROS_3) {
@@ -69,7 +73,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -91,7 +95,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -112,7 +116,28 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
+                .build();
+
+        return pathChain;
+    }
+
+    private Supplier<PathChain> Row1Collect_Shoot(CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+        Supplier<PathChain> pathChain;
+        Pose targetPose;
+        if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.BLUE_CLOSE_SHOOT_POSE;
+        } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
+            targetPose = CommonDefs.BLUE_FAR_SHOOT_POSE;
+        } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
+            targetPose = CommonDefs.RED_CLOSE_SHOOT_POSE;
+        } else {
+            targetPose = CommonDefs.RED_FAR_SHOOT_POSE;
+        }
+
+        pathChain = () -> follower.pathBuilder()
+                .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -133,7 +158,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -154,7 +179,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -175,7 +200,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -192,7 +217,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -209,7 +234,7 @@ private class MovementPaths {
 
         pathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -223,18 +248,18 @@ private class MovementPaths {
         Supplier<PathChain> pathChain;
         Pose targetPose;
         if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
-            targetPose = CommonDefs.BLUE_PARK_POSE;
+            targetPose = CommonDefs.BLUE_PARK_POSE_CLOSE;
         } else if(alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.FAR) {
-            targetPose = CommonDefs.BLUE_PARK_POSE;
+            targetPose = CommonDefs.BLUE_PARK_POSE_FAR;
         } else if(alliance == CommonDefs.Alliance.RED && positionType == CommonDefs.PositionType.CLOSE) {
-            targetPose = CommonDefs.RED_PARK_POSE;
+            targetPose = CommonDefs.RED_PARK_POSE_CLOSE;
         } else {
-            targetPose = CommonDefs.RED_PARK_POSE;
+            targetPose = CommonDefs.RED_PARK_POSE_FAR;
         }
 
         pathChain = () -> follower.pathBuilder()
                 .addPath(new Path(new BezierLine(follower::getPose, targetPose)))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.heading), 0.8))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(targetPose.getHeading()), 0.8))
                 .build();
 
         return pathChain;
@@ -328,7 +353,9 @@ public class AutonMovement {
                 }
             } else if(this.autonState == CommonDefs.AutonState.AUTON_MOVE_TO_COLLECT) {
                 // Collection logic here
-                objCommonFunc.TurnOnIntake();
+                //Todo : implement common params not far params
+                objCommonFunc.TurnOnIntake(farParams.INTAKE_MAX_VELOCITY, farParams.BALLPUSHER_MAX_VELOCITY);
+
                 this.autonState = CommonDefs.AutonState.AUTON_COLLECT_BALLS;
             }
             else if(this.autonState == CommonDefs.AutonState.AUTON_COLLECT_BALLS) {

@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Teleop_VelocityBased;
+import org.firstinspires.ftc.teamcode.teleop.Teleop_VelocityBased;
 import org.firstinspires.ftc.teamcode.logic.DistVelocityProjection;
 
 

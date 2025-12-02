@@ -22,27 +22,24 @@ public class LinearOpModeAdapter extends LinearOpMode {
         // Not used in this adapter
     }
     
-    @Override
-    public boolean opModeIsActive() {
-        return !opMode.isStopRequested();
-    }
+
+//    public boolean m_opModeIsActive() {
+//        return !opMode.isStopRequested();
+//    }
     
-    @Override
-    public void sleep(long milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
+//    @Override
+//    public void sleep(long milliseconds) {
+//        try {
+//            Thread.sleep(milliseconds);
+//        } catch (InterruptedException e) {
+//            Thread.currentThread().interrupt();
+//        }
+//    }
     
-    @Override
-    public boolean isStopRequested() {
-        return opMode.isStopRequested();
-    }
+
+//    //public boolean m_isStopRequested() {
+//        return opMode.isStopRequested();
+//    }
     
-    @Override
-    public boolean isStarted() {
-        return true; // Always consider "started" for TeleOp
-    }
+//s
 }

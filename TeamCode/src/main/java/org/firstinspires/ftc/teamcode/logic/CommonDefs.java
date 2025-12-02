@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.logic;
 
+import com.pedropathing.geometry.Pose;
 /**
  * Common definitions and enums used across the autonomous system
  */
@@ -16,7 +17,7 @@ public class CommonDefs {
     }
 
     public enum AutonRowsToCollect {
-        ROWS_1,
+        ROS_1,
         ROS_2,
         ROS_3,
     }
@@ -70,6 +71,13 @@ public class CommonDefs {
     public static final Pose RED_ROW1_COLLECT_POSE = new Pose(30, -30, 180);
     public static final Pose RED_ROW2_COLLECT_POSE = new Pose(48, -30, 180);
     public static final Pose RED_ROW3_COLLECT_POSE = new Pose(66, -30, 180);
+
+
+    //Parking poses at the end of auton
+    public static final Pose BLUE_PARK_POSE_CLOSE = new Pose(66, 30, 0);
+    public static final Pose BLUE_PARK_POSE_FAR = new Pose(30, -30, 180);
+    public static final Pose RED_PARK_POSE_CLOSE = new Pose(48, -30, 180);
+    public static final Pose RED_PARK_POSE_FAR = new Pose(66, -30, 180);
 
 
 

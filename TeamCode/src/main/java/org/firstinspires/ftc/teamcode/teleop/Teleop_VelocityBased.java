@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -38,6 +38,8 @@ import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
 import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
 import org.firstinspires.ftc.teamcode.logic.LinearOpModeAdapter;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
 
 
 
