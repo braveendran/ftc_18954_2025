@@ -305,6 +305,7 @@ public class AutonMovement {
         this.closeParams = new AutonCloseParams();
         this.farParams = new AutonFarParams();
         this.objCommonFunc = new CommonFunc_18954(opMode);
+        this.objCommonFunc.initializeHardware();
 
         follower = Constants.createFollower(opMode.hardwareMap);
 
@@ -313,6 +314,9 @@ public class AutonMovement {
     }
 
     public void runAutonSequence_PedroPathing() {
+
+        int count=0;
+
         // Initialize starting pose based on alliance and position type
         if (alliance == CommonDefs.Alliance.BLUE && positionType == CommonDefs.PositionType.CLOSE) {
             startingPose = CommonDefs.BLUE_CLOSE_START_POSE;
@@ -332,6 +336,10 @@ public class AutonMovement {
         // Wait for start
         opMode.waitForStart();
 
+        opMode.telemetry.addData("startpos", follower.getPose());
+        opMode.telemetry.update();
+
+
         // Follow each path segment in sequence
         for (Supplier<PathChain> pathChainSupplier : Paths.getPathChains()) {
             follower.followPath(pathChainSupplier.get());
@@ -339,6 +347,10 @@ public class AutonMovement {
                 follower.update();
                 telemetryM.update();
             }
+            count+=1;
+
+            opMode.telemetry.addData("step"+String.valueOf(count), follower.getPose());
+            opMode.telemetry.update();
 
             if(this.autonState == CommonDefs.AutonState.AUTON_MOVE_TO_SHOOT) {
                 this.autonState = CommonDefs.AutonState.AUTON_SHOOT;

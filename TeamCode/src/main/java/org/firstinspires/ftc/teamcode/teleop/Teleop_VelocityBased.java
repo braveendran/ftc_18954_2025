@@ -39,7 +39,7 @@ import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
 import org.firstinspires.ftc.teamcode.logic.LinearOpModeAdapter;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
+
 
 
 
@@ -147,6 +147,8 @@ public class Teleop_VelocityBased extends OpMode {
     private DriverIndicationLED mDriverIndicationLED;
 
     private LocalizerDecode mLocalizer;
+
+    private CommonFunc_18954 objCommonFunc;
 
 
 
