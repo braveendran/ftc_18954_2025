@@ -317,9 +317,15 @@ public class AutonMovement {
 
             if(this.autonState == CommonDefs.AutonState.AUTON_MOVE_TO_SHOOT) {
                 this.autonState = CommonDefs.AutonState.AUTON_SHOOT;
-                // Shooting logic here
-                objCommonFunc.shootPowerCore();
-                this.autonState = CommonDefs.AutonState.AUTON_MOVE_TO_COLLECT;
+                // Start shooting sequence - 3 balls, determine RPM and wait time based on position
+                long shootingRPM = (positionType == CommonDefs.PositionType.CLOSE) ? closeParams.LAUNCHER_POS1_RPM : farParams.LAUNCHER_POS1_RPM;
+                long waitTime = (positionType == CommonDefs.PositionType.FAR) ? 1200 : 550;
+                objCommonFunc.startShootingSequence(3, shootingRPM, closeParams.BALLPUSHER_MAX_VELOCITY, waitTime);
+            } else if(this.autonState == CommonDefs.AutonState.AUTON_SHOOT) {
+                // Update shooting state machine
+                if (objCommonFunc.updateShootingSequence()) {
+                    this.autonState = CommonDefs.AutonState.AUTON_MOVE_TO_COLLECT;
+                }
             } else if(this.autonState == CommonDefs.AutonState.AUTON_MOVE_TO_COLLECT) {
                 // Collection logic here
                 objCommonFunc.TurnOnIntake();
@@ -376,7 +382,7 @@ public class AutonMovement {
         //        }
         
         // Step 3: Shoot first Power Core into the high goal  
-        objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false);
+        objCommonFunc.shootPowerCore(1, closeParams.LAUNCHER_POS1_RPM, closeParams.BALLPUSHER_MAX_VELOCITY, 550);
         opMode.telemetry.addData("Step 3", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();
         
@@ -411,7 +417,7 @@ public class AutonMovement {
         opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
-        objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false);
+        objCommonFunc.shootPowerCore(1, closeParams.LAUNCHER_POS1_RPM, closeParams.BALLPUSHER_MAX_VELOCITY, 550);
         objCommonFunc.TurnOffIntake();
 
         opMode.telemetry.addData("Step 7", objCommonFunc.getIMUYaw());
@@ -518,7 +524,7 @@ public class AutonMovement {
         opMode.telemetry.update();
 
         // Step 3: Shoot first Power Core into the high goal
-        objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true);
+        objCommonFunc.shootPowerCore(1, farParams.LAUNCHER_POS1_RPM, farParams.BALLPUSHER_MAX_VELOCITY, 1200);
         opMode.telemetry.addData("Step 3", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();
         // Step 4: Turn to collection position
@@ -550,7 +556,7 @@ public class AutonMovement {
         opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
-        objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true);
+        objCommonFunc.shootPowerCore(1, farParams.LAUNCHER_POS1_RPM, farParams.BALLPUSHER_MAX_VELOCITY, 1200);
         objCommonFunc.TurnOffIntake();
         opMode.telemetry.addData("Step 7", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();

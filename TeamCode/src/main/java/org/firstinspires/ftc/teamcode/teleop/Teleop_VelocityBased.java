@@ -35,6 +35,9 @@ import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.logic.LimeLightHandler;
 import org.firstinspires.ftc.teamcode.logic.LocalizerDecode;
 import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
+import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
+import org.firstinspires.ftc.teamcode.logic.LinearOpModeAdapter;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 
 
@@ -95,12 +98,7 @@ public class Teleop_VelocityBased extends OpMode {
         GATE_DOWN_PUSHED_BALL_IN, GATE_UP_RAMP_FREE
     }
 
-    private enum ShooterState {
-        IDLE, STARTING,  SHOOTER_GATE_UP_RAMP_FREE, WAITING_FOR_RPMLOCK, SHOOTING, TIMEOUT_SHOOTING , FORCED_SHOOT
-    }
-
     private GatePosition currGatePos = GatePosition.GATE_UP_RAMP_FREE;
-    private ShooterState shooterState = ShooterState.IDLE;
 
     public static  final  long INITIAL_SPIN_UP_TIME=900;
     public static  final long SHOOTING_POSITION_TIME=600;
@@ -124,7 +122,7 @@ public class Teleop_VelocityBased extends OpMode {
     public boolean intake_spitout=false;
     private boolean intakeOn = false;
     private boolean ballPusherOn = false;
-
+    private boolean userWantsCollection = false; // User wants to collect balls
 
     private boolean ForceShoot_WithoutRPM=false;
 
@@ -246,7 +244,11 @@ public class Teleop_VelocityBased extends OpMode {
         {
             mLocalizer = null;
         }
-
+        
+        // Initialize CommonFunc_18954 for unified shooter control
+        // Note: We use a dummy LinearOpMode adapter since CommonFunc_18954 expects LinearOpMode
+        objCommonFunc = new CommonFunc_18954(new LinearOpModeAdapter(this));
+        objCommonFunc.resetShooterState();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -315,102 +317,50 @@ public class Teleop_VelocityBased extends OpMode {
         // ---------------- SHOOTER SEQUENCE ----------------
         boolean fullPowerShot = gamepad2.a;
         boolean shortPowerShot = gamepad2.y;
-
-        switch (shooterState) {
-            case IDLE:
-                if (fullPowerShot || shortPowerShot) {
-                    shooterState = ShooterState.STARTING;
-                    stateStartTime = System.currentTimeMillis();
-                    launcherOn = true;
-                    currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
-                    shortRangeMode = shortPowerShot;
-
-                }
-                else
-                {
-                    currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
-                }
-                break;
-
-
-
-            case STARTING:
-                if (System.currentTimeMillis() - stateStartTime >= INITIAL_SPIN_UP_TIME) { // spin-up time
-                    shooterState = ShooterState.SHOOTER_GATE_UP_RAMP_FREE;
-                    stateStartTime = System.currentTimeMillis();
-                    currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-                }
-                break;
-
-                //Gate open
-            case SHOOTER_GATE_UP_RAMP_FREE:
-
-                if (gamepad2.dpad_down) {
-                    shooterState = ShooterState.IDLE;
-                    launcherOn = false;
-                    currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-                    shortRangeMode = false;
-                }
-                else {
-                        currGatePos = GatePosition.GATE_UP_RAMP_FREE;
-
-                        if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_MIN_TIME) {
-                            stateStartTime = System.currentTimeMillis();
-                            shooterState = ShooterState.WAITING_FOR_RPMLOCK;
-                        }
-                }
-                break;
-
-            case WAITING_FOR_RPMLOCK:
-            {
-                if (shortRangeMode) {
-                    Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
-                } else {
-                    Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
-                }
-
-                if (gamepad2.dpad_down) {
-                    shooterState = ShooterState.IDLE;
-                    launcherOn = false;
-                    currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-                    shortRangeMode = false;
-                }
-                else {
-
-                    if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >=600))
-                    {
-                        //push the ball in
-                        currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
-                        stateStartTime = System.currentTimeMillis();
-                        shooterState = ShooterState.SHOOTING;
-                    }
-                    else if (System.currentTimeMillis() - stateStartTime >= MAX_WAITTIME_ACHIEVING_RPM) {
-                        currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
-                        stateStartTime = System.currentTimeMillis();
-                        shooterState = ShooterState.TIMEOUT_SHOOTING;
-                    }
-                    else if (ForceShoot_WithoutRPM) {
-                        //push the ball in
-                        currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
-                        stateStartTime = System.currentTimeMillis();
-                        shooterState = ShooterState.FORCED_SHOOT;
-                    }
-                }
+        
+        // Start shooting sequence if buttons pressed and not already active
+        if ((fullPowerShot || shortPowerShot) && !objCommonFunc.isShootingActive()) {
+            long shootingRPM = shortPowerShot ? LAUNCHER_SHORTTANGE_RPM : LAUNCHER_LONGRANGE_RPM;
+            long waitTime = shortPowerShot ? 550 : 1200; // Short range = 550ms, long range = 1200ms
+            objCommonFunc.startShootingSequence(1, shootingRPM, 3200, waitTime);
+            launcherOn = true;
+            shortRangeMode = shortPowerShot;
+        }
+        
+        // Stop shooting sequence if requested
+        if (gamepad2.dpad_down && objCommonFunc.isShootingActive()) {
+            objCommonFunc.stopShootingSequence();
+            launcherOn = false;
+            shortRangeMode = false;
+        }
+        
+        // Update shooting state machine
+        if (objCommonFunc.isShootingActive()) {
+            objCommonFunc.updateShootingSequence();
+            
+            // Update gate position based on shooter state
+            CommonFunc_18954.ShooterState state = objCommonFunc.getShooterState();
+            switch (state) {
+                case IDLE:
+                case STARTING:
+                case COMPLETED:
+                    currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
+                    break;
+                case SHOOTER_GATE_UP_RAMP_FREE:
+                case WAITING_FOR_RPMLOCK:
+                case SHOOTING:
+                case TIMEOUT_SHOOTING:
+                case FORCED_SHOOT:
+                    currGatePos = GatePosition.GATE_UP_RAMP_FREE;
+                    break;
             }
-            break;
-
-            case TIMEOUT_SHOOTING:
-            case FORCED_SHOOT:
-            case SHOOTING:
-            {
-                    if (System.currentTimeMillis() - stateStartTime >= SHOOTING_POSITION_TIME) { // 0.5 sec close
-                        shooterState = ShooterState.SHOOTER_GATE_UP_RAMP_FREE;
-                        stateStartTime = System.currentTimeMillis();
-                        currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-                    }
-
+        } else {
+            currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
+            if (launcherOn && !objCommonFunc.isShootingActive()) {
+                // Shooting completed, turn off launcher
+                launcherOn = false;
+                shortRangeMode = false;
             }
-            break;
         }
 
         if(gamepad2.x) {
@@ -423,29 +373,35 @@ public class Teleop_VelocityBased extends OpMode {
 
 
         // ---------------- INTAKE ----------------
-        intake_spitout=gamepad1.left_bumper;
-        intakeOn = gamepad1.right_bumper;
-        if(intakeOn) {
-            //intakeMotor.setPower(1.0);
+        // Right bumper = collect balls (forward)
+        userWantsCollection = gamepad1.right_bumper;
+        if (userWantsCollection) {
+            objCommonFunc.setCollectionMode(true);
+        } else {
+            objCommonFunc.setCollectionMode(false);
         }
-        else if(intake_spitout) {
-            intakeMotor.setPower(-0.4);
+        
+        // Left bumper = reverse mode for stuck ball (overrides everything)
+        intake_spitout = gamepad1.left_bumper;
+        
+        if (intake_spitout && !objCommonFunc.isReverseMode()) {
+            // Start reverse shooting mode
+            objCommonFunc.startReverseShootingMode();
+        } else if (!intake_spitout && objCommonFunc.isReverseMode()) {
+            // Stop reverse shooting mode
+            objCommonFunc.stopReverseShootingMode();
         }
-        else {
-            intakeMotor.setPower(0.0);
-        }
+        
+        // Use state-based motor control from CommonFunc_18954
+        double expectedIntakeVel = objCommonFunc.getExpectedIntakeVelocity(userWantsCollection);
+        intakeMotor.setVelocity(expectedIntakeVel);
+        intakeOn = expectedIntakeVel != 0;
 
         // ---------------- BALL PUSHER ----------------
-        ballPusherOn = launcherOn || intakeOn ;
-        if(ballPusherOn) {
-            //ballPusherMotor.setPower(1.0);
-        }
-        else if(intake_spitout) {
-            ballPusherMotor.setPower(-0.4);
-        }
-        else {
-            ballPusherMotor.setPower(0.0);
-        }
+        // Use state-based motor control from CommonFunc_18954
+        double expectedBallPusherVel = objCommonFunc.getExpectedBallPusherVelocity(userWantsCollection);
+        ballPusherMotor.setVelocity(expectedBallPusherVel);
+        ballPusherOn = expectedBallPusherVel != 0;
 
 
         // ----- RPM ADJUSTMENTS ----------
@@ -500,13 +456,10 @@ public class Teleop_VelocityBased extends OpMode {
 
 
         // ---------------- LAUNCHER CONTROL ----------------
-
-        if(intake_spitout)
-        {
-            setLauncherRPM(-LAUNCHER_LONGRANGE_RPM);
-            currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-        }
-        else if (launcherOn) {
+        
+        // Launcher control is now handled by CommonFunc_18954 state machine
+        // Only handle manual launcher control when not in shooting sequence
+        if (!objCommonFunc.isShootingActive() && !objCommonFunc.isReverseMode() && launcherOn) {
 
             double current_launcher_rpm;
 
@@ -594,6 +547,20 @@ public class Teleop_VelocityBased extends OpMode {
 
         telemetry.addData("P.position", follower.getPose());
         telemetry.addData("P.velocity", follower.getVelocity());
+        
+        // Shooter telemetry
+        if (objCommonFunc != null) {
+            telemetry.addData("Shooter State", objCommonFunc.getShooterState());
+            telemetry.addData("Shooting Progress", objCommonFunc.getShootingProgress());
+            telemetry.addData("Intake/Pusher State", objCommonFunc.getIntakeBallPusherState());
+            telemetry.addData("Reverse Mode", objCommonFunc.isReverseMode() ? "ACTIVE" : "OFF");
+            telemetry.addData("User Collection", userWantsCollection ? "ON" : "OFF");
+            telemetry.addData("Launcher On", launcherOn);
+            telemetry.addData("Launcher RPM", getLauncherRpm());
+            telemetry.addData("Target RPM", Target_RPM_Shooting);
+            telemetry.addData("Intake Velocity", objCommonFunc.getExpectedIntakeVelocity(userWantsCollection));
+            telemetry.addData("Ball Pusher Velocity", objCommonFunc.getExpectedBallPusherVelocity(userWantsCollection));
+        }
 
         telemetryM.debug("position", follower.getPose());
         telemetryM.debug("velocity", follower.getVelocity());

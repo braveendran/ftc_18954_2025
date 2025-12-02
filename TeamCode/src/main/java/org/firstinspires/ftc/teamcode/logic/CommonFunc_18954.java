@@ -28,6 +28,35 @@ public class CommonFunc_18954 {
 
     boolean bShooterRunning=false;
 
+    // Shooter state management
+    public enum ShooterState {
+        IDLE, STARTING, SHOOTER_GATE_UP_RAMP_FREE, WAITING_FOR_RPMLOCK, SHOOTING, TIMEOUT_SHOOTING, FORCED_SHOOT, COMPLETED, REVERSE_SHOOTING
+    }
+    
+    // Intake and ball pusher state management
+    public enum IntakeBallPusherState {
+        STOPPED,           // Both stopped
+        COLLECTING,        // Forward for ball collection
+        SHOOTING_SUPPORT,  // Forward during shooting sequence
+        REVERSE_STUCK      // Reverse when ball is stuck
+    }
+    
+    private ShooterState shooterState = ShooterState.IDLE;
+    private IntakeBallPusherState intakeBallPusherState = IntakeBallPusherState.STOPPED;
+    private long stateStartTime = 0;
+    private int currentBallCount = 0;
+    private int targetBallCount = 0;
+    private long targetRPM = 0;
+    private long gateOpenWaitTime = 550; // Default wait time
+    private boolean reverseMode = false; // True when stuck ball reverse mode is active
+    
+    // Shooter timing constants
+    public static final long INITIAL_SPIN_UP_TIME = 900;
+    public static final long SHOOTING_POSITION_TIME = 600;
+    public static final long GATE_OPEN_MIN_TIME = 800;
+    public static final long MAX_WAITTIME_ACHIEVING_RPM = 500;
+    public static final long LAUNCHER_RPM_TOLERANCE = 100;
+
     static final double COUNTS_PER_MOTOR_REV = 537.7; // Example for a goBILDA 5203 series motor
     static final double DRIVE_GEAR_REDUCTION = 1.0;
     static final double WHEEL_DIAMETER_INCHES = 4.0;
@@ -127,62 +156,258 @@ public class CommonFunc_18954 {
         bShooterRunning=true;
     }
     /**
-     * A self-contained function to shoot 3 Power Core.
+     * Initialize shooting sequence - call this to start shooting
+     * @param ballCount Number of balls to shoot (1-4)
+     * @param LauncherRPM Target RPM for launcher
+     * @param BallPusherVelocity Velocity for ball pusher
+     * @param gateOpenWaitTimeMs Time to wait with gate open (was 'far' parameter)
      */
-    public void shootPowerCore(long LauncherRPM,boolean unused ,double BallPusherVelocity,boolean far) {
-        //telemetry.addData("Shooter", "Starting sequence...");
-        //telemetry.update();
-
-        long shooter_start_time;
-
-
-        // Spin up the launcher motor
-        if(!bShooterRunning) {
-            StartShooter(LauncherRPM,BallPusherVelocity);
+    public void startShootingSequence(int ballCount, long LauncherRPM, double BallPusherVelocity, long gateOpenWaitTimeMs) {
+        if (shooterState != ShooterState.IDLE) {
+            return; // Already in progress
+        }
+        
+        targetBallCount = Math.max(1, Math.min(4, ballCount)); // Clamp to 1-4 balls
+        currentBallCount = 0;
+        targetRPM = LauncherRPM;
+        gateOpenWaitTime = gateOpenWaitTimeMs;
+        reverseMode = false;
+        
+        shooterState = ShooterState.STARTING;
+        stateStartTime = System.currentTimeMillis();
+        intakeBallPusherState = IntakeBallPusherState.SHOOTING_SUPPORT;
+        
+        // Start shooter systems
+        if (!bShooterRunning) {
+            StartShooter(LauncherRPM, BallPusherVelocity);
         }
         intakeMotor.setVelocity(0);
         stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-        opMode.sleep(400);
-
-
-
-        for (int i=0;i<4;i++) {
-
-            if(i >= 2)
-            {
-                intakeMotor.setVelocity(3200);
-            }
-
-            ballPusherMotor.setVelocity(3200);
-            // Open the stopper to feed the Power Core
-            shooter_start_time = System.currentTimeMillis();
-            while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Teleop_VelocityBased.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Teleop_VelocityBased.MAX_WAITTIME_ACHIEVING_RPM))
-            {
-                opMode.sleep(1);
-            }
-
-            opMode.sleep(300);
-
-            stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
-            if(far == true)
-            {
-                opMode.sleep(1200);
-            }
-            else {
-                opMode.sleep(550); // Wait 0.5 seconds for the core to pass
-            }
-
-            //ballPusherMotor.setVelocity(0);
-            // Close the stopper and turn off the launcher
-            stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-            opMode.sleep((long)(Teleop_VelocityBased.SHOOTING_POSITION_TIME));
+    }
+    
+    /**
+     * Start reverse shooting mode to clear stuck balls
+     */
+    public void startReverseShootingMode() {
+        reverseMode = true;
+        shooterState = ShooterState.REVERSE_SHOOTING;
+        intakeBallPusherState = IntakeBallPusherState.REVERSE_STUCK;
+        stateStartTime = System.currentTimeMillis();
+        
+        // Reverse all systems
+        setLauncherRPM(-Math.abs(targetRPM > 0 ? targetRPM : 3000)); // Use negative RPM
+        stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS);
+        bShooterRunning = true;
+    }
+    
+    /**
+     * Stop reverse shooting mode and return to idle
+     */
+    public void stopReverseShootingMode() {
+        reverseMode = false;
+        intakeBallPusherState = IntakeBallPusherState.STOPPED;
+        finishShootingSequence();
+        shooterState = ShooterState.IDLE;
+    }
+    
+    /**
+     * Update shooting state machine - call this repeatedly in loop()
+     * @return true if shooting is complete, false if still in progress
+     */
+    public boolean updateShootingSequence() {
+        if (shooterState == ShooterState.IDLE || shooterState == ShooterState.COMPLETED) {
+            return shooterState == ShooterState.COMPLETED;
         }
-
+        
+        switch (shooterState) {
+            case STARTING:
+                if (System.currentTimeMillis() - stateStartTime >= INITIAL_SPIN_UP_TIME) {
+                    shooterState = ShooterState.SHOOTER_GATE_UP_RAMP_FREE;
+                    stateStartTime = System.currentTimeMillis();
+                    stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
+                }
+                break;
+                
+            case SHOOTER_GATE_UP_RAMP_FREE:
+                if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_MIN_TIME) {
+                    stateStartTime = System.currentTimeMillis();
+                    shooterState = ShooterState.WAITING_FOR_RPMLOCK;
+                }
+                break;
+                
+            case WAITING_FOR_RPMLOCK:
+                // Enable intake after 2nd ball for continuous feeding (only in forward mode)
+                if (currentBallCount >= 2 && !reverseMode) {
+                    // Intake state will be managed by getExpectedIntakeVelocity()
+                }
+                
+                if (Math.abs(getLauncherRpm() - Math.abs(targetRPM)) <= LAUNCHER_RPM_TOLERANCE) {
+                    // RPM locked, start shooting
+                    stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
+                    stateStartTime = System.currentTimeMillis();
+                    shooterState = ShooterState.SHOOTING;
+                } else if (System.currentTimeMillis() - stateStartTime >= MAX_WAITTIME_ACHIEVING_RPM) {
+                    // Timeout, shoot anyway
+                    stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
+                    stateStartTime = System.currentTimeMillis();
+                    shooterState = ShooterState.TIMEOUT_SHOOTING;
+                }
+                break;
+                
+            case REVERSE_SHOOTING:
+                // Continue reverse operation until manually stopped
+                // No automatic progression in reverse mode
+                break;
+                
+            case SHOOTING:
+            case TIMEOUT_SHOOTING:
+                if (System.currentTimeMillis() - stateStartTime >= gateOpenWaitTime) {
+                    // Close gate and increment ball count
+                    stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
+                    currentBallCount++;
+                    
+                    if (currentBallCount >= targetBallCount) {
+                        // All balls shot, finish sequence
+                        finishShootingSequence();
+                        shooterState = ShooterState.COMPLETED;
+                    } else {
+                        // Prepare for next ball
+                        stateStartTime = System.currentTimeMillis();
+                        shooterState = ShooterState.WAITING_FOR_RPMLOCK;
+                    }
+                }
+                break;
+                
+            case COMPLETED:
+                return true;
+                
+            default:
+                break;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Stop shooting sequence and reset to idle
+     */
+    public void stopShootingSequence() {
+        finishShootingSequence();
+        shooterState = ShooterState.IDLE;
+    }
+    
+    /**
+     * Check if shooter is currently active
+     */
+    public boolean isShootingActive() {
+        return shooterState != ShooterState.IDLE && shooterState != ShooterState.COMPLETED;
+    }
+    
+    /**
+     * Get current shooter state for telemetry
+     */
+    public ShooterState getShooterState() {
+        return shooterState;
+    }
+    
+    /**
+     * Get shooting progress (balls shot / total balls)
+     */
+    public String getShootingProgress() {
+        return currentBallCount + "/" + targetBallCount;
+    }
+    
+    private void finishShootingSequence() {
         setLauncherRPM(0);
-        ballPusherMotor.setVelocity(0);
-
-        bShooterRunning=false;
-
+        intakeBallPusherState = IntakeBallPusherState.STOPPED;
+        bShooterRunning = false;
+        reverseMode = false;
+    }
+    
+    /**
+     * Get expected intake motor velocity based on current shooter state and user collection preference
+     * @param userWantsCollection true if user wants to collect balls (intake forward)
+     * @return velocity for intake motor (positive = forward, negative = reverse, 0 = stop)
+     */
+    public double getExpectedIntakeVelocity(boolean userWantsCollection) {
+        switch (intakeBallPusherState) {
+            case STOPPED:
+                return userWantsCollection ? 3200 : 0;
+            case COLLECTING:
+                return 3200; // Always forward for collection
+            case SHOOTING_SUPPORT:
+                // Forward for shooting support (after 2nd ball) or user collection
+                return (currentBallCount >= 2 || userWantsCollection) ? 3200 : 0;
+            case REVERSE_STUCK:
+                return -3200; // Always reverse when clearing stuck ball
+            default:
+                return 0;
+        }
+    }
+    
+    /**
+     * Get expected ball pusher motor velocity based on current shooter state and user collection preference
+     * @param userWantsCollection true if user wants to collect balls (ball pusher forward)
+     * @return velocity for ball pusher motor (positive = forward, negative = reverse, 0 = stop)
+     */
+    public double getExpectedBallPusherVelocity(boolean userWantsCollection) {
+        switch (intakeBallPusherState) {
+            case STOPPED:
+                return userWantsCollection ? 3200 : 0;
+            case COLLECTING:
+                return 3200; // Always forward for collection
+            case SHOOTING_SUPPORT:
+                return 3200; // Always forward during shooting
+            case REVERSE_STUCK:
+                return -3200; // Always reverse when clearing stuck ball
+            default:
+                return 0;
+        }
+    }
+    
+    /**
+     * Set intake and ball pusher state for manual collection
+     * @param collecting true to enable collection mode
+     */
+    public void setCollectionMode(boolean collecting) {
+        if (shooterState == ShooterState.IDLE || shooterState == ShooterState.COMPLETED) {
+            intakeBallPusherState = collecting ? IntakeBallPusherState.COLLECTING : IntakeBallPusherState.STOPPED;
+        }
+    }
+    
+    /**
+     * Check if currently in reverse mode
+     */
+    public boolean isReverseMode() {
+        return reverseMode;
+    }
+    
+    /**
+     * Get current intake/ball pusher state
+     */
+    public IntakeBallPusherState getIntakeBallPusherState() {
+        return intakeBallPusherState;
+    }
+    
+    /**
+     * Legacy blocking function for backward compatibility
+     * @deprecated Use startShootingSequence() and updateShootingSequence() instead
+     */
+    @Deprecated
+    public void shootPowerCore(long LauncherRPM, boolean unused, double BallPusherVelocity, boolean far) {
+        shootPowerCore(4, LauncherRPM, BallPusherVelocity, far ? 1200 : 550);
+    }
+    
+    /**
+     * Legacy blocking function with configurable parameters
+     * @deprecated Use startShootingSequence() and updateShootingSequence() instead
+     */
+    @Deprecated
+    public void shootPowerCore(int ballCount, long LauncherRPM, double BallPusherVelocity, long gateOpenWaitTimeMs) {
+        startShootingSequence(ballCount, LauncherRPM, BallPusherVelocity, gateOpenWaitTimeMs);
+        while (!updateShootingSequence() && opMode.opModeIsActive()) {
+            opMode.sleep(10);
+        }
     }
 
     public void TurnOnIntake(double IntakeVelocity,double BallPusherVelocity)
@@ -522,7 +747,19 @@ public class CommonFunc_18954 {
         }
         // Return 0 if it's not a DcMotorEx or if something is wrong
         return false;
-
+    }
+    
+    /**
+     * Reset shooter to idle state (useful for initialization)
+     */
+    public void resetShooterState() {
+        shooterState = ShooterState.IDLE;
+        intakeBallPusherState = IntakeBallPusherState.STOPPED;
+        currentBallCount = 0;
+        targetBallCount = 0;
+        stateStartTime = 0;
+        reverseMode = false;
+        finishShootingSequence();
     }
 
 }
