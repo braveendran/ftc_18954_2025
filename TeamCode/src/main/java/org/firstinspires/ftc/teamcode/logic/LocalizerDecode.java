@@ -85,8 +85,8 @@ public class LocalizerDecode {
             double currentHeading = botPose.getOrientation().getYaw(AngleUnit.DEGREES);
 
             // The X and Y are public fields
-            double currentX = botPose.getPosition().x;
-            double currentY = botPose.getPosition().y;
+            double currentX = CommonDefs.ConvertCameraPosToInches(botPose.getPosition().x);
+            double currentY = CommonDefs.ConvertCameraPosToInches(botPose.getPosition().y);
 
             boolean isAligned = false;
             // Check against each valid pose in our list

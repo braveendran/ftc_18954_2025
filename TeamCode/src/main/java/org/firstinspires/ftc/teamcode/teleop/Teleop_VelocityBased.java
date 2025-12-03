@@ -485,27 +485,27 @@ public class Teleop_VelocityBased extends OpMode {
 
 
         // ---------------- TELEMETRY ----------------
-        telemetry.addData("Speed Multiplier", String.format("%.2f", speedMultiplier));
-        telemetry.addData("GateClosed", currGatePos.toString());
-        telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
-        telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
-        telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
-        telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
-        telemetry.addData("Shooter State", shooterState.toString());
+        //telemetry.addData("Speed Multiplier", String.format("%.2f", speedMultiplier));
+        //telemetry.addData("GateClosed", currGatePos.toString());
+        //telemetry.addData("Ball Pusher", ballPusherOn ? "Running" : "Stopped");
+        //telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
+        //telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
+        //telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
+        //telemetry.addData("Shooter State", shooterState.toString());
         telemetry.addData("Launcher RPM",getLauncherRpm());
         telemetry.addData("Differential",diff_percent);
         telemetry.addData("RPM Based Shooting",!ForceShoot_WithoutRPM);
         telemetry.addData("Short Range RPM",LAUNCHER_SHORTTANGE_RPM);
         telemetry.addData("Long Range RPM",LAUNCHER_LONGRANGE_RPM);
         telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
-        telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
-        telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
+        //telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
+        //telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
 
         if(ENABLE_LIMEIGHT_CAMERA){
             if(pose != null) {
-                telemetry.addData("X", pose.getPosition().x);
-                telemetry.addData("Y", pose.getPosition().y);
-                telemetry.addData("Z", pose.getPosition().z);
+                telemetry.addData("X", CommonDefs.ConvertCameraPosToInches(pose.getPosition().x));
+                telemetry.addData("Y", CommonDefs.ConvertCameraPosToInches(pose.getPosition().y));
+                telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches(pose.getPosition().z));
                 telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
                 telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
                 telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));

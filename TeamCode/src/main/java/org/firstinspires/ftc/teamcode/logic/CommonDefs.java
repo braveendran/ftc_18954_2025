@@ -23,5 +23,12 @@ public class CommonDefs {
 
     public static final double HEADING_TOLERANCE_DEG=1.0;
 
+
+    public static double ConvertCameraPosToInches(double val)
+    {
+        //convert metres to inches
+        return val*39.37;
+    }
+
 }
 
