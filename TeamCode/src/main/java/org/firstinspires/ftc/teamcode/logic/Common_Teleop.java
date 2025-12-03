@@ -80,6 +80,7 @@ public class Common_Teleop {
     private ShooterState shooterState = ShooterState.IDLE;
 
     public static  final  long INITIAL_SPIN_UP_TIME=900;
+    public static final long  SHOOTING_TURN_TIME_THRESHOLD=500;
     public static  final long SHOOTING_POSITION_TIME=600;
     public static  final long GATE_OPEN_MIN_TIME=800;
     public static  final long MAX_WAITTIME_ACHIEVING_RPM=500;
@@ -209,6 +210,16 @@ public class Common_Teleop {
         init_private();        
     }
 
+
+    private void DriveControl_PowerBased(double y, double x, double rx)
+    {
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
+        leftFront.setPower((y + x + rx) / denominator * speedMultiplier);
+        leftBack.setPower((y - x + rx) / denominator * speedMultiplier);
+        rightFront.setPower((y - x - rx) / denominator * speedMultiplier);
+        rightBack.setPower((y + x - rx) / denominator * speedMultiplier);
+    }
+
     // ---------------- LOOP METHOD ----------------
 
     public void loop() {
@@ -238,17 +249,31 @@ public class Common_Teleop {
             speedMultiplier = NORMAL_SPEED;
         }
 
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
-        leftFront.setPower((y + x + rx) / denominator * speedMultiplier);
-        leftBack.setPower((y - x + rx) / denominator * speedMultiplier);
-        rightFront.setPower((y - x - rx) / denominator * speedMultiplier);
-        rightBack.setPower((y + x - rx) / denominator * speedMultiplier);
+
+        if(shooterState == ShooterState.TURNING_TO_SHOOT)
+        {
+            //turning will be controlled in the state machine
+        }
+        else
+        {
+            //Drive control using the gamepad
+            DriveControl_PowerBased(y, x, rx);
+        }
+        
 
 
 
         // ---------------- SHOOTER SEQUENCE ----------------
-        boolean fullPowerShot = this.opMode.gamepad2.a;
-        boolean shortPowerShot = this.opMode.gamepad2.y;
+        boolean fullPowerShot = this.opMode.gamepad2.a || this.opMode.gamepad2.left_bumper;
+        boolean shortPowerShot = this.opMode.gamepad2.y || this.opMode.gamepad2.right_bumper;
+        boolean turn_before_shoot=false;
+        double turn_angle_shoot_correction=0;
+        if(( this.opMode.gamepad2.left_bumper || this.opMode.gamepad2.right_bumper ) &&  (limelight_result != null))
+        {
+            turn_before_shoot=true;
+            turn_angle_shoot_correction=mLocalizer.getHeadingCorrectionDeg();            
+        }
+
         if (this.opMode.gamepad2.dpad_down)
         {
             CancelShootingAfterCurrentSequence=true;
@@ -257,7 +282,15 @@ public class Common_Teleop {
         switch (shooterState) {
             case IDLE:
                 if (fullPowerShot || shortPowerShot) {
-                    shooterState = ShooterState.STARTING;
+                    if(turn_before_shoot)
+                    {
+                        turn_relative_start(turn_angle_shoot_correction);
+                        shooterState = ShooterState.TURNING_TO_SHOOT;
+                    }
+                    else
+                    {
+                        shooterState = ShooterState.STARTING;
+                    }
                     stateStartTime = System.currentTimeMillis();
                     launcherOn = true;
                     currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
@@ -268,6 +301,24 @@ public class Common_Teleop {
                 else
                 {
                     currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
+                }
+                break;
+
+            case ShooterState.TURNING_TO_SHOOT:
+                if (System.currentTimeMillis() - stateStartTime >= SHOOTING_TURN_TIME_THRESHOLD)
+                {
+                    turn_relative_stop();
+                    shooterState = ShooterState.STARTING;
+                    stateStartTime = System.currentTimeMillis();
+                    
+                }
+                else{
+                    if(turn_relative_main())
+                    {
+                        turn_relative_stop();
+                        shooterState = ShooterState.STARTING;
+                        stateStartTime = System.currentTimeMillis();
+                    }                
                 }
                 break;
 
@@ -399,11 +450,11 @@ public class Common_Teleop {
                 }
             }
             if (!SHORT_LAUNCHER_ADJUST_ACTIVE) {
-                if (this.opMode.gamepad2.right_bumper) {
+                if (this.opMode.gamepad2.left_stick_y > 0.5) {
                     LAUNCHER_SHORTTANGE_RPM += 50;
                     SHORT_LAUNCHER_ADJUST_ACTIVE = true;
                     SHORT_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-                } else if (this.opMode.gamepad2.left_bumper) {
+                } else if (this.opMode.gamepad2.left_stick_y < -0.5) {
                     LAUNCHER_SHORTTANGE_RPM -= 50;
                     SHORT_LAUNCHER_ADJUST_ACTIVE = true;
                     SHORT_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
@@ -416,11 +467,11 @@ public class Common_Teleop {
                 }
             }
             if (!LONG_LAUNCHER_ADJUST_ACTIVE) {
-                if (this.opMode.gamepad2.right_trigger > 0.5) {
+                if (this.opMode.gamepad2.right_stick_y > 0.5) {
                     LAUNCHER_LONGRANGE_RPM += 50;
                     LONG_LAUNCHER_ADJUST_ACTIVE = true;
                     LONG_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-                } else if (this.opMode.gamepad2.left_trigger > 0.5) {
+                } else if (this.opMode.gamepad2.right_stick_y < -0.5) {
                     LAUNCHER_LONGRANGE_RPM -= 50;
                     LONG_LAUNCHER_ADJUST_ACTIVE = true;
                     LONG_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
@@ -491,7 +542,7 @@ public class Common_Teleop {
         //telemetry.addData("Launcher", launcherOn ? "Running" : "Stopped");
         //telemetry.addData("Launcher Mode", shortRangeMode ? "SHORT RANGE (15%)" : "FULL POWER");
         //telemetry.addData("Intake", intakeOn ? "Running" : "Stopped");
-        //telemetry.addData("Shooter State", shooterState.toString());
+        telemetry.addData("Shooter State", shooterState.toString());
         telemetry.addData("Launcher RPM",getLauncherRpm());
         telemetry.addData("Differential",diff_percent);
         telemetry.addData("RPM Based Shooting",!ForceShoot_WithoutRPM);
@@ -547,6 +598,124 @@ public class Common_Teleop {
         // Return 0 if it's not a DcMotorEx or if something is wrong
         return false;
 
+    }
+
+
+    private void setMotorModes(DcMotor.RunMode mode) {
+        leftFront.setMode(mode);
+        rightFront.setMode(mode);
+        leftBack.setMode(mode);
+        rightBack.setMode(mode);
+    }
+
+    private void turn_relative_stop() {
+        // Stop motion
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
+
+        setMotorModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    private double turn_relative_targetYaw;
+    private double turn_relative_currentYaw;
+    private boolean turn_relative_main()
+    {
+
+        boolean turn_completed=false;        
+
+        if (imu == null) {
+            //feature unavailable
+            turn_completed=true;
+            return turn_completed;
+        }
+
+        final double HEADING_TOLERANCE_DEG = CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_CLOSE; // degrees
+        final double MIN_POWER = 0.10; // minimum power to overcome static friction
+        final double K_P = 0.015; // proportional gain (tune for your robot)
+
+
+        java.util.function.BiFunction<Double, Double, Double> shortestDiff = (target, current) -> {
+            double diff = norm.applyAsDouble(target - current);
+            return diff;
+        };
+    
+
+        turn_relative_currentYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        double error = shortestDiff.apply(turn_relative_targetYaw, turn_relative_currentYaw);
+
+        // If within tolerance, we're done
+        if (Math.abs(error) <=  CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_CLOSE) 
+        {
+            turn_completed=true;
+            return turn_completed;
+        }
+
+        // P-controller output
+        double output = K_P * error;
+        double absOut = Math.abs(output);
+        if (absOut < MIN_POWER) absOut = MIN_POWER;
+
+        double leftPower = 0.0;
+        double rightPower = 0.0;
+        if (error > 0) {
+            // Need to turn left: left wheels reverse, right wheels forward
+            leftPower = -absOut;
+            rightPower = absOut;
+        } else {
+                // Need to turn right
+            leftPower = absOut;
+            rightPower = -absOut;
+        }
+
+        leftFront.setPower(leftPower);
+        leftBack.setPower(leftPower);
+        rightFront.setPower(rightPower);
+        rightBack.setPower(rightPower);
+
+        // Update Limelight (if present) to keep vision data fresh while turning
+        if (mLimeLightHandler != null) {
+            try {
+                mLimeLightHandler.update(System.currentTimeMillis());
+            } catch (Exception ignored) {}
+        }
+
+    }
+
+    private boolean turn_relative_start(double angle) {
+        // Prefer IMU-based closed-loop turning, with Limelight updates while turning.
+        // If IMU is not initialized, fall back to the encoder-based approximation.
+        boolean turn_completed=false;        
+
+        if (imu == null) {
+            //feature unavailable
+            turn_completed=true;
+            return turn_completed;
+        }
+
+        setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        // Helper lambdas for angle normalization and shortest difference
+        java.util.function.DoubleUnaryOperator norm = (v) -> {
+            double a = v % 360.0;
+            if (a <= -180.0) a += 360.0;
+            if (a > 180.0) a -= 360.0;
+            return a;
+        };
+
+ 
+
+        // Read current heading (degrees)
+        turn_relative_currentYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        turn_relative_targetYaw = norm.applyAsDouble(currentYaw + angle);
+
+
+        long startMs = System.currentTimeMillis();
+
+        // Ensure motors are in a mode suitable for setting power directly
+        turn_completed=turn_relative_main();
+        return turn_completed;
     }
     
 }
