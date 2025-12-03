@@ -42,7 +42,7 @@ public class Common_Teleop {
 
     // ---------------- LAUNCHER SETTINGS ----------------
     public static long  LAUNCHER_SHORTTANGE_RPM = 2800;
-    public static  long LAUNCHER_LONGRANGE_RPM = 5000;
+    public static  long LAUNCHER_LONGRANGE_RPM = 3700;
     public static final  long LAUNCHER_RPM_TOLERANCE = 100;
 
 
@@ -143,10 +143,11 @@ public class Common_Teleop {
         stopperServo = hardwareMap.get(Servo.class, "stopperServo");
 
         // Motor directions
-        leftFront.setDirection(DcMotor.Direction.FORWARD);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.FORWARD);
-        rightBack.setDirection(DcMotor.Direction.REVERSE);
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
+
         ballPusherMotor.setDirection(DcMotor.Direction.REVERSE);
         launcherMotor.setDirection(DcMotor.Direction.REVERSE);
         //launcherBottomMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -225,9 +226,9 @@ public class Common_Teleop {
 
 
         // ---------------- DRIVE CONTROL ----------------
-        double y = this.opMode.gamepad1.left_stick_y;
-        double x = -this.opMode.gamepad1.left_stick_x * 1.1;
-        double rx = -this.opMode.gamepad1.right_stick_x;
+        double y = -this.opMode.gamepad1.left_stick_y;
+        double x = this.opMode.gamepad1.left_stick_x * 1.1;
+        double rx = this.opMode.gamepad1.right_stick_x;
 
         if (this.opMode.gamepad1.right_trigger > 0.1) {
             speedMultiplier = HIGH_SPEED;
