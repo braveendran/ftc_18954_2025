@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.logic;
 
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -20,9 +20,8 @@ import org.firstinspires.ftc.teamcode.logic.LocalizerDecode;
 import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
 
 
+public class Common_Teleop {
 
-@TeleOp(name = "TeleopVelocity", group = "Test")
-public class Teleop_VelocityBased extends OpMode {
 
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
@@ -30,7 +29,7 @@ public class Teleop_VelocityBased extends OpMode {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
-    private CommonDefs.Alliance mAlliance=  CommonDefs.Alliance.RED;
+    private CommonDefs.Alliance mAlliance;
 
 
 
@@ -126,18 +125,14 @@ public class Teleop_VelocityBased extends OpMode {
     private LocalizerDecode mLocalizer;
 
 
+    //Reference from OpMode
+    OpMode opMode;
+    hardwareMap hardwareMap;
+    Telemetry telemetry;
 
-
-
-
-
-
-
-    // ---------------- INIT METHOD ----------------
-    @Override
-    public void init() {
-
-
+    private void init_private()
+    {
+        // Private init tasks can be added here if needed
         // Hardware mapping
         leftFront = hardwareMap.dcMotor.get("FrontLeft");
         rightFront = hardwareMap.dcMotor.get("FrontRight");
@@ -209,8 +204,18 @@ public class Teleop_VelocityBased extends OpMode {
         telemetry.addData("Status", "Initialized");
     }
 
+    // ---------------- INIT METHOD ----------------
+    public void init(OpMode opMode,hardwareMap hardwareMap, Telemetry telemetry, CommonDefs.Alliance Alliance) {
+
+        this.opMode=opMode;
+        this.hardwareMap=hardwareMap;
+        this.telemetry=telemetry;
+        this.mAlliance = Alliance;
+        init_private();        
+    }
+
     // ---------------- LOOP METHOD ----------------
-    @Override
+
     public void loop() {
 
         Pose3D pose=null;
@@ -562,4 +567,5 @@ public class Teleop_VelocityBased extends OpMode {
         return false;
 
     }
+    
 }
