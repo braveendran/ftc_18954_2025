@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.logic.CommonCamera_18954;
 
 @TeleOp(name = "TestCode", group = "Test")
 @Disabled
@@ -102,7 +101,6 @@ public class TestCode extends OpMode {
     private long stateStartTime = 0;
     private boolean shortRangeMode = false;
 
-    CommonCamera_18954 mCameraRef;
 
     private final boolean ENABLE_CAMERA_DEFINE=false;
 
@@ -160,10 +158,7 @@ public class TestCode extends OpMode {
 
         // Stopper initial position
         stopperServo.setPosition(GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-
-        if(ENABLE_CAMERA_DEFINE) {
-            mCameraRef = new CommonCamera_18954(this);
-        }
+        
 
 
         telemetry.addData("Status", "Initialized");

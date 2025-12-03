@@ -11,7 +11,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Teleop_VelocityBased;
+import org.firstinspires.ftc.teamcode.logic.Common_Teleop;
+
 import org.firstinspires.ftc.teamcode.logic.DistVelocityProjection;
 
 
@@ -106,7 +107,7 @@ public class CommonFunc_18954 {
         intakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Stopper initial position
-        stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
+        stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
 
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
@@ -144,7 +145,7 @@ public class CommonFunc_18954 {
             StartShooter(LauncherRPM,BallPusherVelocity);
         }
         intakeMotor.setVelocity(0);
-        stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
+        stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
         opMode.sleep(400);
 
 
@@ -159,14 +160,14 @@ public class CommonFunc_18954 {
             ballPusherMotor.setVelocity(3200);
             // Open the stopper to feed the Power Core
             shooter_start_time = System.currentTimeMillis();
-            while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Teleop_VelocityBased.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Teleop_VelocityBased.MAX_WAITTIME_ACHIEVING_RPM))
+            while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Common_Teleop.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Common_Teleop.MAX_WAITTIME_ACHIEVING_RPM))
             {
                 opMode.sleep(1);
             }
 
             opMode.sleep(300);
 
-            stopperServo.setPosition(Teleop_VelocityBased.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
+            stopperServo.setPosition(Common_Teleop.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
             if(far == true)
             {
                 opMode.sleep(1200);
@@ -177,8 +178,8 @@ public class CommonFunc_18954 {
 
             //ballPusherMotor.setVelocity(0);
             // Close the stopper and turn off the launcher
-            stopperServo.setPosition(Teleop_VelocityBased.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-            opMode.sleep((long)(Teleop_VelocityBased.SHOOTING_POSITION_TIME));
+            stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
+            opMode.sleep((long)(Common_Teleop.SHOOTING_POSITION_TIME));
         }
 
         setLauncherRPM(0);

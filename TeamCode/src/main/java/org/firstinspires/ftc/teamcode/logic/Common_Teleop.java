@@ -8,12 +8,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.logic.CommonCamera_18954;
 import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.logic.LimeLightHandler;
 import org.firstinspires.ftc.teamcode.logic.LocalizerDecode;
@@ -109,9 +110,7 @@ public class Common_Teleop {
     private long stateStartTime = 0;
     private boolean shortRangeMode = false;
 
-    CommonCamera_18954 mCameraRef;
 
-    private final boolean ENABLE_CAMERA_DEFINE=false;
     private final boolean ENABLE_LIMEIGHT_CAMERA=true;
 
 
@@ -126,9 +125,9 @@ public class Common_Teleop {
 
 
     //Reference from OpMode
-    OpMode opMode;
-    hardwareMap hardwareMap;
-    Telemetry telemetry;
+    private OpMode opMode;
+    private HardwareMap hardwareMap;
+    private Telemetry telemetry;
 
     private void init_private()
     {
@@ -180,11 +179,6 @@ public class Common_Teleop {
 
 
 
-
-        if(ENABLE_CAMERA_DEFINE) {
-            mCameraRef = new CommonCamera_18954(this);
-        }
-
         if(ENABLE_LIMEIGHT_CAMERA) {
             mLimeLightHandler = new LimeLightHandler(imu, hardwareMap,mAlliance);
         }
@@ -205,11 +199,11 @@ public class Common_Teleop {
     }
 
     // ---------------- INIT METHOD ----------------
-    public void init(OpMode opMode,hardwareMap hardwareMap, Telemetry telemetry, CommonDefs.Alliance Alliance) {
+    public void init(OpMode opMode,CommonDefs.Alliance Alliance) {
 
         this.opMode=opMode;
-        this.hardwareMap=hardwareMap;
-        this.telemetry=telemetry;
+        this.hardwareMap=opMode.hardwareMap;
+        this.telemetry=opMode.telemetry;
         this.mAlliance = Alliance;
         init_private();        
     }
@@ -223,9 +217,6 @@ public class Common_Teleop {
         double diff_percent=0;
 
         //----------------- CAMERA Feedback -----------------
-        if(ENABLE_CAMERA_DEFINE) {
-            pose = mCameraRef.telemetryAprilTag();
-        }
 
         if(ENABLE_LIMEIGHT_CAMERA) {
             //pose = mLimeLightHandler.update(System.currentTimeMillis());
@@ -234,13 +225,13 @@ public class Common_Teleop {
 
 
         // ---------------- DRIVE CONTROL ----------------
-        double y = gamepad1.left_stick_y;
-        double x = -gamepad1.left_stick_x * 1.1;
-        double rx = -gamepad1.right_stick_x;
+        double y = this.opMode.gamepad1.left_stick_y;
+        double x = -this.opMode.gamepad1.left_stick_x * 1.1;
+        double rx = -this.opMode.gamepad1.right_stick_x;
 
-        if (gamepad1.right_trigger > 0.1) {
+        if (this.opMode.gamepad1.right_trigger > 0.1) {
             speedMultiplier = HIGH_SPEED;
-        } else if (gamepad1.left_trigger > 0.1) {
+        } else if (this.opMode.gamepad1.left_trigger > 0.1) {
             speedMultiplier = LOW_SPEED;
         } else {
             speedMultiplier = NORMAL_SPEED;
@@ -255,8 +246,8 @@ public class Common_Teleop {
 
 
         // ---------------- SHOOTER SEQUENCE ----------------
-        boolean fullPowerShot = gamepad2.a;
-        boolean shortPowerShot = gamepad2.y;
+        boolean fullPowerShot = this.opMode.gamepad2.a;
+        boolean shortPowerShot = this.opMode.gamepad2.y;
 
         switch (shooterState) {
             case IDLE:
@@ -287,7 +278,7 @@ public class Common_Teleop {
                 //Gate open
             case SHOOTER_GATE_UP_RAMP_FREE:
 
-                if (gamepad2.dpad_down) {
+                if (this.opMode.gamepad2.dpad_down) {
                     shooterState = ShooterState.IDLE;
                     launcherOn = false;
                     currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
@@ -311,7 +302,7 @@ public class Common_Teleop {
                     Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
                 }
 
-                if (gamepad2.dpad_down) {
+                if (this.opMode.gamepad2.dpad_down) {
                     shooterState = ShooterState.IDLE;
                     launcherOn = false;
                     currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
@@ -355,18 +346,18 @@ public class Common_Teleop {
             break;
         }
 
-        if(gamepad2.x) {
+        if(this.opMode.gamepad2.x) {
             ForceShoot_WithoutRPM=false;
         }
-        else if(gamepad2.b)
+        else if(this.opMode.gamepad2.b)
         {
             ForceShoot_WithoutRPM=true;
         }
 
 
         // ---------------- INTAKE ----------------
-        intake_spitout=gamepad1.left_bumper;
-        intakeOn = gamepad1.right_bumper;
+        intake_spitout=this.opMode.gamepad1.left_bumper;
+        intakeOn = this.opMode.gamepad1.right_bumper;
         if(intakeOn) {
             intakeMotor.setPower(1.0);
         }
@@ -393,10 +384,10 @@ public class Common_Teleop {
         // ----- RPM ADJUSTMENTS ----------
 
         //---------------RPM ADJUSTMENTS --- CONTROL
-        if(gamepad1.x) {
+        if(this.opMode.gamepad1.x) {
             RPM_ADJUSTMENTS_ALLOWED = true;
         }
-        else if(gamepad1.b) {
+        else if(this.opMode.gamepad1.b) {
             RPM_ADJUSTMENTS_ALLOWED = false;
         }
 
@@ -407,11 +398,11 @@ public class Common_Teleop {
                 }
             }
             if (!SHORT_LAUNCHER_ADJUST_ACTIVE) {
-                if (gamepad2.right_bumper) {
+                if (this.opMode.gamepad2.right_bumper) {
                     LAUNCHER_SHORTTANGE_RPM += 50;
                     SHORT_LAUNCHER_ADJUST_ACTIVE = true;
                     SHORT_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-                } else if (gamepad2.left_bumper) {
+                } else if (this.opMode.gamepad2.left_bumper) {
                     LAUNCHER_SHORTTANGE_RPM -= 50;
                     SHORT_LAUNCHER_ADJUST_ACTIVE = true;
                     SHORT_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
@@ -424,11 +415,11 @@ public class Common_Teleop {
                 }
             }
             if (!LONG_LAUNCHER_ADJUST_ACTIVE) {
-                if (gamepad2.right_trigger > 0.5) {
+                if (this.opMode.gamepad2.right_trigger > 0.5) {
                     LAUNCHER_LONGRANGE_RPM += 50;
                     LONG_LAUNCHER_ADJUST_ACTIVE = true;
                     LONG_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-                } else if (gamepad2.left_trigger > 0.5) {
+                } else if (this.opMode.gamepad2.left_trigger > 0.5) {
                     LAUNCHER_LONGRANGE_RPM -= 50;
                     LONG_LAUNCHER_ADJUST_ACTIVE = true;
                     LONG_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
@@ -471,10 +462,10 @@ public class Common_Teleop {
         if(GATE_POSITION_TESTING_ENABLED == true)
         {
             if(System.currentTimeMillis() > GATE_POSITION_LASTADJUSTED_TIME + 500) {
-                if (gamepad1.a) {
+                if (this.opMode.gamepad1.a) {
                     GATE_POSITION_TESTING += .1;
                     GATE_POSITION_LASTADJUSTED_TIME = System.currentTimeMillis();
-                } else if (gamepad1.y) {
+                } else if (this.opMode.gamepad1.y) {
                     GATE_POSITION_TESTING -= .1;
                     GATE_POSITION_LASTADJUSTED_TIME = System.currentTimeMillis();
                 }
@@ -523,17 +514,6 @@ public class Common_Teleop {
         }
 
 
-        if(ENABLE_CAMERA_DEFINE) {
-
-            if (pose != null) {
-                telemetry.addData("X", pose.getPosition().x);
-                telemetry.addData("Y", pose.getPosition().y);
-                telemetry.addData("Z", pose.getPosition().z);
-                telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
-                telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
-                telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
-            }
-        }
 
         telemetry.update();
     }
