@@ -45,12 +45,15 @@ public class CommonFunc_18954 {
     LimeLightHandler mLimeLightHandler;
     DistVelocityProjection mDistanceDistVelocityProjection;
 
+    CommonDefs.Alliance alliance;
 
 
-    public CommonFunc_18954(LinearOpMode opMode) {
+
+    public CommonFunc_18954(LinearOpMode opMode, CommonDefs.Alliance alliance) {
         this.opMode = opMode;
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
+        this.alliance=alliance;
 
 
 
@@ -112,7 +115,7 @@ public class CommonFunc_18954 {
 
         StartingYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
-        mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
+        mLimeLightHandler = new LimeLightHandler(imu, hardwareMap, alliance);
         mDistanceDistVelocityProjection = new DistVelocityProjection();
 
         telemetry.addData("Status", "Hardware Initialized");

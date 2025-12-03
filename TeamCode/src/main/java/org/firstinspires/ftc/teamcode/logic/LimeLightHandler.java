@@ -14,17 +14,23 @@ public class LimeLightHandler {
     private final Limelight3A limelight;
     private final IMU imu;
     private Pose3D last_botpose;
+    private LLResult pose_result;
     private long last_updatedtime;
 
 
 
-    public LimeLightHandler(IMU imu, HardwareMap hardwareMap) {
+    public LimeLightHandler(IMU imu, HardwareMap hardwareMap,CommonDefs.Alliance alliance) {
 
         this.imu = imu;
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
-        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
-        limelight.pipelineSwitch(0);
+        limelight.setPollRateHz(60); // This sets how often we ask Limelight for data (100 times per second)
+        if(alliance==CommonDefs.Alliance.RED) {
+            limelight.pipelineSwitch(0);
+        }
+        else {
+            limelight.pipelineSwitch(1);
+        }
         limelight.start(); // This tells Limelight to start looking!
         last_botpose=null;
         update(0);
@@ -34,15 +40,18 @@ public class LimeLightHandler {
      * Updates the robot's pose based on the latest Limelight data.
      * This method should be called repeatedly in a loop.
      */
-    public Pose3D update(long current_ms) {
+    public LLResult update(long current_ms) {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw(AngleUnit.DEGREES));
         LLResult result = limelight.getLatestResult();
         if (result !=null && result.isValid()) {
+
+            //copy result to pose_result
+            pose_result=result;
             // Get the pose of the robot with respect to the blue alliance AprilTags
-            last_botpose = result.getBotpose_MT2();
+            last_botpose = result.getBotpose();
             last_updatedtime=current_ms;
-            return last_botpose;
+            return pose_result;
         }
 
         return null;
@@ -50,6 +59,9 @@ public class LimeLightHandler {
 
     public Pose3D getLast_botpose() {
         return last_botpose;
+    }
+    public LLResult getLast_botposeResult() {
+        return pose_result;
     }
 
     public long getLast_updatedTime()

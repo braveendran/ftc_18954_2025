@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.params.AutonFarParams;
 import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
 
@@ -19,7 +20,7 @@ public class AutoRed_NearShoot extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        objCommonFunc = new CommonFunc_18954(this);
+        objCommonFunc = new CommonFunc_18954(this, CommonDefs.Alliance.RED);
 
         // ---------------- INIT & HARDWARE MAPPING ----------------
         objCommonFunc.initializeHardware();

@@ -31,7 +31,7 @@ public class AutonMovement {
         this.twoRowMode = twoRowMode;
         this.closeParams = new AutonCloseParams();
         this.farParams = new AutonFarParams();
-        this.objCommonFunc = new CommonFunc_18954(opMode);
+        this.objCommonFunc = new CommonFunc_18954(opMode,alliance);
     }
     
     public void runAutonomousSequence() {

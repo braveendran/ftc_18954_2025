@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -29,7 +30,7 @@ public class Teleop_VelocityBased extends OpMode {
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
-    private CommonDefs.Alliance mAlliance=  CommonDefs.Alliance.BLUE;
+    private CommonDefs.Alliance mAlliance=  CommonDefs.Alliance.RED;
 
 
 
@@ -122,7 +123,7 @@ public class Teleop_VelocityBased extends OpMode {
 
     private DriverIndicationLED mDriverIndicationLED;
 
-    //private LocalizerDecode mLocalizer;
+    private LocalizerDecode mLocalizer;
 
 
 
@@ -190,19 +191,19 @@ public class Teleop_VelocityBased extends OpMode {
         }
 
         if(ENABLE_LIMEIGHT_CAMERA) {
-            mLimeLightHandler = new LimeLightHandler(imu, hardwareMap);
+            mLimeLightHandler = new LimeLightHandler(imu, hardwareMap,mAlliance);
         }
 
         mDriverIndicationLED=new DriverIndicationLED(hardwareMap);
 
-//        if(ENABLE_LIMEIGHT_CAMERA)
-//        {
-//            mLocalizer = new LocalizerDecode(mAlliance,mLimeLightHandler,mDriverIndicationLED);
-//        }
-//        else
-//        {
-//            mLocalizer = null;
-//        }
+        if(ENABLE_LIMEIGHT_CAMERA)
+        {
+            mLocalizer = new LocalizerDecode(mAlliance,mLimeLightHandler,mDriverIndicationLED);
+        }
+        else
+        {
+            mLocalizer = null;
+        }
 
 
         telemetry.addData("Status", "Initialized");
@@ -212,7 +213,8 @@ public class Teleop_VelocityBased extends OpMode {
     @Override
     public void loop() {
 
-        Pose3D pose;
+        Pose3D pose=null;
+        LLResult limelight_result;
         double diff_percent=0;
 
         //----------------- CAMERA Feedback -----------------
@@ -221,7 +223,8 @@ public class Teleop_VelocityBased extends OpMode {
         }
 
         if(ENABLE_LIMEIGHT_CAMERA) {
-            pose = mLimeLightHandler.update(System.currentTimeMillis());
+            //pose = mLimeLightHandler.update(System.currentTimeMillis());
+            limelight_result=mLocalizer.update(System.currentTimeMillis());
         }
 
 
@@ -502,10 +505,12 @@ public class Teleop_VelocityBased extends OpMode {
         //telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
 
         if(ENABLE_LIMEIGHT_CAMERA){
-            if(pose != null) {
-                telemetry.addData("X", CommonDefs.ConvertCameraPosToInches(pose.getPosition().x));
-                telemetry.addData("Y", CommonDefs.ConvertCameraPosToInches(pose.getPosition().y));
-                telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches(pose.getPosition().z));
+            if(limelight_result != null) {
+                pose=mLimeLightHandler.getLast_botpose();
+                telemetry.addData("tx", String.format("%.3f", (limelight_result.getTx())));
+                telemetry.addData("X", CommonDefs.ConvertCameraPosToInches_x(pose.getPosition().x));
+                telemetry.addData("Y", CommonDefs.ConvertCameraPosToInches_y(pose.getPosition().y));
+                telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches_z(pose.getPosition().z));
                 telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
                 telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
                 telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
