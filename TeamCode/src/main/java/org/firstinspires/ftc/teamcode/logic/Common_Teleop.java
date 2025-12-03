@@ -73,7 +73,7 @@ public class Common_Teleop {
     }
 
     private enum ShooterState {
-        IDLE, STARTING,  SHOOTER_GATE_UP_RAMP_FREE, WAITING_FOR_RPMLOCK, SHOOTING, TIMEOUT_SHOOTING , FORCED_SHOOT
+        IDLE, STARTING,  SHOOTER_GATE_UP_RAMP_FREE, WAITING_FOR_RPMLOCK, SHOOTING, TIMEOUT_SHOOTING , FORCED_SHOOT ,TURNING_TO_SHOOT
     }
 
     private GatePosition currGatePos = GatePosition.GATE_UP_RAMP_FREE;
@@ -104,11 +104,9 @@ public class Common_Teleop {
 
 
     private boolean ForceShoot_WithoutRPM=false;
-
-
-
     private long stateStartTime = 0;
     private boolean shortRangeMode = false;
+    private boolean CancelShootingAfterCurrentSequence=false;
 
 
     private final boolean ENABLE_LIMEIGHT_CAMERA=true;
@@ -195,6 +193,8 @@ public class Common_Teleop {
         }
 
 
+        CancelShootingAfterCurrentSequence=false;
+
         telemetry.addData("Status", "Initialized");
     }
 
@@ -248,6 +248,10 @@ public class Common_Teleop {
         // ---------------- SHOOTER SEQUENCE ----------------
         boolean fullPowerShot = this.opMode.gamepad2.a;
         boolean shortPowerShot = this.opMode.gamepad2.y;
+        if (this.opMode.gamepad2.dpad_down)
+        {
+            CancelShootingAfterCurrentSequence=true;
+        }
 
         switch (shooterState) {
             case IDLE:
@@ -257,6 +261,7 @@ public class Common_Teleop {
                     launcherOn = true;
                     currGatePos =  GatePosition.GATE_DOWN_PUSHED_BALL_IN;
                     shortRangeMode = shortPowerShot;
+                    CancelShootingAfterCurrentSequence=false;
 
                 }
                 else
@@ -276,22 +281,14 @@ public class Common_Teleop {
                 break;
 
                 //Gate open
-            case SHOOTER_GATE_UP_RAMP_FREE:
-
-                if (this.opMode.gamepad2.dpad_down) {
-                    shooterState = ShooterState.IDLE;
-                    launcherOn = false;
-                    currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-                    shortRangeMode = false;
+            case SHOOTER_GATE_UP_RAMP_FREE: 
+                
+                currGatePos = GatePosition.GATE_UP_RAMP_FREE;
+                if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_MIN_TIME) {
+                    stateStartTime = System.currentTimeMillis();
+                    shooterState = ShooterState.WAITING_FOR_RPMLOCK;
                 }
-                else {
-                        currGatePos = GatePosition.GATE_UP_RAMP_FREE;
-
-                        if (System.currentTimeMillis() - stateStartTime >= GATE_OPEN_MIN_TIME) {
-                            stateStartTime = System.currentTimeMillis();
-                            shooterState = ShooterState.WAITING_FOR_RPMLOCK;
-                        }
-                }
+                
                 break;
 
             case WAITING_FOR_RPMLOCK:
@@ -301,14 +298,6 @@ public class Common_Teleop {
                 } else {
                     Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
                 }
-
-                if (this.opMode.gamepad2.dpad_down) {
-                    shooterState = ShooterState.IDLE;
-                    launcherOn = false;
-                    currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
-                    shortRangeMode = false;
-                }
-                else {
 
                     if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >=600))
                     {
@@ -328,18 +317,29 @@ public class Common_Teleop {
                         stateStartTime = System.currentTimeMillis();
                         shooterState = ShooterState.FORCED_SHOOT;
                     }
-                }
+                
             }
             break;
 
             case TIMEOUT_SHOOTING:
             case FORCED_SHOOT:
             case SHOOTING:
-            {
+            {               
                     if (System.currentTimeMillis() - stateStartTime >= SHOOTING_POSITION_TIME) { // 0.5 sec close
-                        shooterState = ShooterState.SHOOTER_GATE_UP_RAMP_FREE;
-                        stateStartTime = System.currentTimeMillis();
-                        currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
+                        if (CancelShootingAfterCurrentSequence)
+                        {
+                            CancelShootingAfterCurrentSequence=false;
+                            shooterState = ShooterState.IDLE;
+                            launcherOn = false;
+                            currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
+                            shortRangeMode = false;
+                        }
+                        else
+                        {
+                            shooterState = ShooterState.SHOOTER_GATE_UP_RAMP_FREE;
+                            stateStartTime = System.currentTimeMillis();
+                            currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
+                        }
                     }
 
             }
