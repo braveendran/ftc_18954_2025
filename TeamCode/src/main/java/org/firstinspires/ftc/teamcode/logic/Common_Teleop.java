@@ -362,7 +362,7 @@ public class Common_Teleop {
             intakeMotor.setPower(1.0);
         }
         else if(intake_spitout) {
-            intakeMotor.setPower(-0.4);
+            intakeMotor.setPower(-1.0);
         }
         else {
             intakeMotor.setPower(0.0);
@@ -374,7 +374,7 @@ public class Common_Teleop {
             ballPusherMotor.setPower(1.0);
         }
         else if(intake_spitout) {
-            ballPusherMotor.setPower(-0.4);
+            ballPusherMotor.setPower(-1.0);
         }
         else {
             ballPusherMotor.setPower(0.0);
