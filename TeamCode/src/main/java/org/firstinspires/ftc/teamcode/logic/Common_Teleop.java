@@ -73,14 +73,14 @@ public class Common_Teleop {
     }
 
     private enum ShooterState {
-        IDLE, STARTING,  SHOOTER_GATE_UP_RAMP_FREE, WAITING_FOR_RPMLOCK, SHOOTING, TIMEOUT_SHOOTING , FORCED_SHOOT ,TURNING_TO_SHOOT
+        IDLE, STARTING,STARTING_TURNING_TIMEDOUT,  SHOOTER_GATE_UP_RAMP_FREE, WAITING_FOR_RPMLOCK, SHOOTING, TIMEOUT_SHOOTING , FORCED_SHOOT ,TURNING_TO_SHOOT
     }
 
     private GatePosition currGatePos = GatePosition.GATE_UP_RAMP_FREE;
     private ShooterState shooterState = ShooterState.IDLE;
 
     public static  final  long INITIAL_SPIN_UP_TIME=900;
-    public static final long  SHOOTING_TURN_TIME_THRESHOLD=500;
+    public static final long  SHOOTING_TURN_TIME_THRESHOLD=1300;
     public static  final long SHOOTING_POSITION_TIME=600;
     public static  final long GATE_OPEN_MIN_TIME=800;
     public static  final long MAX_WAITTIME_ACHIEVING_RPM=500;
@@ -127,6 +127,9 @@ public class Common_Teleop {
     private OpMode opMode;
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
+
+    private double turn_relative_targetYaw;
+    private double turn_relative_currentYaw;
 
     private void init_private()
     {
@@ -308,7 +311,7 @@ public class Common_Teleop {
                 if (System.currentTimeMillis() - stateStartTime >= SHOOTING_TURN_TIME_THRESHOLD)
                 {
                     turn_relative_stop();
-                    shooterState = ShooterState.STARTING;
+                    shooterState = ShooterState.STARTING_TURNING_TIMEDOUT;
                     stateStartTime = System.currentTimeMillis();
                     
                 }
@@ -323,7 +326,7 @@ public class Common_Teleop {
                 break;
 
 
-
+            case STARTING_TURNING_TIMEDOUT:
             case STARTING:
                 if (System.currentTimeMillis() - stateStartTime >= INITIAL_SPIN_UP_TIME) { // spin-up time
                     shooterState = ShooterState.SHOOTER_GATE_UP_RAMP_FREE;
@@ -563,10 +566,13 @@ public class Common_Teleop {
                 telemetry.addData("heading corr", String.format("%.3f", mLocalizer.getHeadingCorrectionDeg()));
                 telemetry.addData("X", CommonDefs.ConvertCameraPosToInches_x(pose.getPosition().x));
                 telemetry.addData("Y", CommonDefs.ConvertCameraPosToInches_y(pose.getPosition().y));
-                telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches_z(pose.getPosition().z));
+ //               telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches_z(pose.getPosition().z));
                 telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
-                telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
-                telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+ //               telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
+ //               telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+                telemetry.addData("turn_relative_currentYaw", turn_relative_currentYaw);
+                telemetry.addData("turn_relative_currentYaw", turn_relative_targetYaw);
+
             }
         }
 
@@ -623,8 +629,7 @@ public class Common_Teleop {
         //setMotorModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    private double turn_relative_targetYaw;
-    private double turn_relative_currentYaw;
+
     private boolean turn_relative_main()
     {
 
