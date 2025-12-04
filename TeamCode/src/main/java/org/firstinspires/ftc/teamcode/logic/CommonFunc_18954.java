@@ -14,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.logic.Common_Teleop;
 
 import org.firstinspires.ftc.teamcode.logic.DistVelocityProjection;
+import java.util.function.Consumer;
 
 
 public class CommonFunc_18954 {
@@ -37,24 +38,30 @@ public class CommonFunc_18954 {
     private final double LAUNCHER_MOTOR_TICKS_PER_REV = 28.0;
 
     private final boolean use_relative_turn=false;
+    private final boolean use_localizer_turn=true;
 
 
     long MINIMAL_SLEEP_TIME=1;
 
     IMU imu;
     double StartingYaw;
-    LimeLightHandler mLimeLightHandler;
     DistVelocityProjection mDistanceDistVelocityProjection;
 
     CommonDefs.Alliance alliance;
+    Consumer<Long> periodicUpdateCallback;
 
 
 
     public CommonFunc_18954(LinearOpMode opMode, CommonDefs.Alliance alliance) {
+        this(opMode, alliance, null);
+    }
+
+    public CommonFunc_18954(LinearOpMode opMode, CommonDefs.Alliance alliance, Consumer<Long> periodicUpdateCallback) {
         this.opMode = opMode;
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
-        this.alliance=alliance;
+        this.alliance = alliance;
+        this.periodicUpdateCallback = periodicUpdateCallback;
 
 
 
@@ -69,7 +76,15 @@ public class CommonFunc_18954 {
         }
     }
 
+    public IMU getIMU() {
+        return imu;
+    }
 
+    public void callPeriodicUpdate() {
+        if (periodicUpdateCallback != null) {
+            periodicUpdateCallback.accept(System.currentTimeMillis());
+        }
+    }
 
     public void initializeHardware() {
         // Hardware mapping
@@ -116,7 +131,6 @@ public class CommonFunc_18954 {
 
         StartingYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
-        mLimeLightHandler = new LimeLightHandler(imu, hardwareMap, alliance);
         mDistanceDistVelocityProjection = new DistVelocityProjection();
 
         telemetry.addData("Status", "Hardware Initialized");
@@ -162,10 +176,12 @@ public class CommonFunc_18954 {
             shooter_start_time = System.currentTimeMillis();
             while (( Math.abs (getLauncherRpm() - LauncherRPM) >= Common_Teleop.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Common_Teleop.MAX_WAITTIME_ACHIEVING_RPM))
             {
+                callPeriodicUpdate();
                 opMode.sleep(1);
             }
 
             opMode.sleep(300);
+            callPeriodicUpdate();
 
             stopperServo.setPosition(Common_Teleop.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
             if(far == true)
@@ -175,11 +191,13 @@ public class CommonFunc_18954 {
             else {
                 opMode.sleep(550); // Wait 0.5 seconds for the core to pass
             }
+            callPeriodicUpdate();
 
             //ballPusherMotor.setVelocity(0);
             // Close the stopper and turn off the launcher
             stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
             opMode.sleep((long)(Common_Teleop.SHOOTING_POSITION_TIME));
+            callPeriodicUpdate();
         }
 
         setLauncherRPM(0);
@@ -245,6 +263,7 @@ public class CommonFunc_18954 {
             //telemetry.addData("Path", "Running to L:%7d R:%7d", leftFrontTarget, rightFrontTarget);
             //telemetry.addData("Current", "Running at L:%7d R:%7d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition());
             //telemetry.update();
+            callPeriodicUpdate();
             opMode.sleep(MINIMAL_SLEEP_TIME);
         }
 
@@ -280,17 +299,44 @@ public class CommonFunc_18954 {
      * Method to turn the robot. A positive angle turns left.
      */
 
+    public double turn_to_shoot(double speed, double relative_angle,double absolute_angle, double timeoutS,LLResult CameraResult, LocalizerDecode mlocalize) {
+
+        double angle_turned=relative_angle;
+        if(use_localizer_turn && (CameraResult != null && CameraResult.isValid()) && (mlocalize!=null))
+        {
+            mlocalize.turn_relative(speed,mlocalize.getHeadingCorrectionDeg(),timeoutS,CameraResult);
+            relative_angle=mlocalize.getHeadingCorrectionDeg();
+
+        }
+        else 
+        {
+            if(use_relative_turn)
+            {
+                turn_relative(speed, relative_angle, timeoutS);
+            }
+            else
+            {
+                turn_absolute(speed, absolute_angle, timeoutS);
+            }
+        }
+
+        return angle_turned;
+    }
+
     public void turn(double speed, double relative_angle,double absolute_angle, double timeoutS) {
 
         if(use_relative_turn)
-        {
-            turn_relative(speed, relative_angle, timeoutS);
-        }
-        else
-        {
-            turn_absolute(speed, absolute_angle, timeoutS);
-        }
+            {
+                turn_relative(speed, relative_angle, timeoutS);
+            }
+            else
+            {
+                turn_absolute(speed, absolute_angle, timeoutS);
+            }
+
     }
+
+    
 
    private void turn_absolute(double speed, double absolute_yaw, double timeoutS)
    {
@@ -348,13 +394,8 @@ public class CommonFunc_18954 {
            rightFront.setPower(rightPower);
            rightBack.setPower(rightPower);
 
-           // Update Limelight (if present) to keep vision data fresh while turning
-           if (mLimeLightHandler != null) {
-               try {
-                   mLimeLightHandler.update(System.currentTimeMillis());
-               } catch (Exception ignored) {}
-           }
 
+           callPeriodicUpdate();
            opMode.sleep(10);
        }
 
@@ -436,13 +477,8 @@ public class CommonFunc_18954 {
             rightFront.setPower(rightPower);
             rightBack.setPower(rightPower);
 
-            // Update Limelight (if present) to keep vision data fresh while turning
-            if (mLimeLightHandler != null) {
-                try {
-                    mLimeLightHandler.update(System.currentTimeMillis());
-                } catch (Exception ignored) {}
-            }
 
+            callPeriodicUpdate();
             opMode.sleep(10);
         }
 
@@ -487,6 +523,7 @@ public class CommonFunc_18954 {
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutS) &&
                 (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy()))
         {
+            callPeriodicUpdate();
             opMode.sleep(MINIMAL_SLEEP_TIME);
             // telemetry.addData("Path", "Strafing...");
             // telemetry.update();
@@ -528,5 +565,7 @@ public class CommonFunc_18954 {
         return false;
 
     }
+
+
 
 }

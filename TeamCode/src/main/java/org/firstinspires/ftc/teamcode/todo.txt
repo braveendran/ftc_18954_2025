@@ -1,0 +1,2 @@
+1. Update the camera position as left not right
+2. After spitout , transition to shooting state

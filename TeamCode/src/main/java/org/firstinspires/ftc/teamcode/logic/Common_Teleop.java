@@ -271,7 +271,7 @@ public class Common_Teleop {
         boolean shortPowerShot = this.opMode.gamepad2.y || this.opMode.gamepad2.right_bumper;
         boolean turn_before_shoot=false;
         double turn_angle_shoot_correction=0;
-        if(( this.opMode.gamepad2.left_bumper || this.opMode.gamepad2.right_bumper ) &&  (limelight_result != null))
+        if(( this.opMode.gamepad2.left_bumper || this.opMode.gamepad2.right_bumper ) &&  (limelight_result != null && limelight_result.isValid()) )
         {
             turn_before_shoot=true;
             turn_angle_shoot_correction=mLocalizer.getHeadingCorrectionDeg();            
@@ -560,7 +560,7 @@ public class Common_Teleop {
         }
 
         if(ENABLE_LIMEIGHT_CAMERA){
-            if(limelight_result != null) {
+            if(limelight_result != null && limelight_result.isValid())  {
                 pose=mLimeLightHandler.getLast_botpose();
                 telemetry.addData("tx", String.format("%.3f", (limelight_result.getTx())));
                 telemetry.addData("heading corr", String.format("%.3f", mLocalizer.getHeadingCorrectionDeg()));
