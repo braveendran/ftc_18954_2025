@@ -26,7 +26,7 @@ public class LocalizerDecode {
     // Use a list of valid poses instead of a single target
     private final List<ValidPose> validPoses;
 
-    private final double HeadingCorrectionDeg = 0.0; // degrees
+    private double HeadingCorrectionDeg = 0.0; // degrees
 
     /**
      * A private inner class to hold the definition of a valid pose,
@@ -110,13 +110,15 @@ public class LocalizerDecode {
                 boolean headingMatch =false ;
 
                 if(ta > CommonDefs.LIMELIGHT_HEADING_TARGETAREA_THRESHOLD ) {
-                    HeadingCorrectionDeg =deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_CLOSE_HEADING;
+                    HeadingCorrectionDeg = deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_CLOSE_HEADING;
+                    HeadingCorrectionDeg =HeadingCorrectionDeg*-1;
                     //Close shooting
                     headingMatch = Math.abs(deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_CLOSE_HEADING) <= CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_CLOSE;
                 }
                 else
                 {
                     HeadingCorrectionDeg =deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_FAR_HEADING;
+                    HeadingCorrectionDeg =HeadingCorrectionDeg*-1;
                     //Far shooting
                     headingMatch = Math.abs(deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_FAR_HEADING) <= CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_FAR;
                 }

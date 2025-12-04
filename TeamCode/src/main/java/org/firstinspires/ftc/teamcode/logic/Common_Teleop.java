@@ -42,7 +42,7 @@ public class Common_Teleop {
 
     // ---------------- LAUNCHER SETTINGS ----------------
     public static long  LAUNCHER_SHORTTANGE_RPM = 2800;
-    public static  long LAUNCHER_LONGRANGE_RPM = 3700;
+    public static  long LAUNCHER_LONGRANGE_RPM = 3500;
     public static final  long LAUNCHER_RPM_TOLERANCE = 100;
 
 
@@ -304,7 +304,7 @@ public class Common_Teleop {
                 }
                 break;
 
-            case ShooterState.TURNING_TO_SHOOT:
+            case TURNING_TO_SHOOT:
                 if (System.currentTimeMillis() - stateStartTime >= SHOOTING_TURN_TIME_THRESHOLD)
                 {
                     turn_relative_stop();
@@ -450,11 +450,11 @@ public class Common_Teleop {
                 }
             }
             if (!SHORT_LAUNCHER_ADJUST_ACTIVE) {
-                if (this.opMode.gamepad2.left_stick_y > 0.5) {
+                if (this.opMode.gamepad2.left_stick_y < -0.5) {
                     LAUNCHER_SHORTTANGE_RPM += 50;
                     SHORT_LAUNCHER_ADJUST_ACTIVE = true;
                     SHORT_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-                } else if (this.opMode.gamepad2.left_stick_y < -0.5) {
+                } else if (this.opMode.gamepad2.left_stick_y > 0.5) {
                     LAUNCHER_SHORTTANGE_RPM -= 50;
                     SHORT_LAUNCHER_ADJUST_ACTIVE = true;
                     SHORT_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
@@ -467,11 +467,11 @@ public class Common_Teleop {
                 }
             }
             if (!LONG_LAUNCHER_ADJUST_ACTIVE) {
-                if (this.opMode.gamepad2.right_stick_y > 0.5) {
+                if (this.opMode.gamepad2.right_stick_y < -0.5) {
                     LAUNCHER_LONGRANGE_RPM += 50;
                     LONG_LAUNCHER_ADJUST_ACTIVE = true;
                     LONG_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
-                } else if (this.opMode.gamepad2.right_stick_y < -0.5) {
+                } else if (this.opMode.gamepad2.right_stick_y > 0.5 ) {
                     LAUNCHER_LONGRANGE_RPM -= 50;
                     LONG_LAUNCHER_ADJUST_ACTIVE = true;
                     LONG_LAUNCHER_LAST_ADJUST_TIME = System.currentTimeMillis();
@@ -551,11 +551,16 @@ public class Common_Teleop {
         telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
         //telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
         //telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
+        if(imu != null)
+        {
+            telemetry.addData("IMU Heading", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+        }
 
         if(ENABLE_LIMEIGHT_CAMERA){
             if(limelight_result != null) {
                 pose=mLimeLightHandler.getLast_botpose();
                 telemetry.addData("tx", String.format("%.3f", (limelight_result.getTx())));
+                telemetry.addData("heading corr", String.format("%.3f", mLocalizer.getHeadingCorrectionDeg()));
                 telemetry.addData("X", CommonDefs.ConvertCameraPosToInches_x(pose.getPosition().x));
                 telemetry.addData("Y", CommonDefs.ConvertCameraPosToInches_y(pose.getPosition().y));
                 telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches_z(pose.getPosition().z));
@@ -615,7 +620,7 @@ public class Common_Teleop {
         leftBack.setPower(0);
         rightBack.setPower(0);
 
-        setMotorModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //setMotorModes(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     private double turn_relative_targetYaw;
@@ -634,6 +639,13 @@ public class Common_Teleop {
         final double HEADING_TOLERANCE_DEG = CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_CLOSE; // degrees
         final double MIN_POWER = 0.10; // minimum power to overcome static friction
         final double K_P = 0.015; // proportional gain (tune for your robot)
+
+        java.util.function.DoubleUnaryOperator norm = (v) -> {
+            double a = v % 360.0;
+            if (a <= -180.0) a += 360.0;
+            if (a > 180.0) a -= 360.0;
+            return a;
+        };
 
 
         java.util.function.BiFunction<Double, Double, Double> shortestDiff = (target, current) -> {
@@ -680,7 +692,7 @@ public class Common_Teleop {
                 mLimeLightHandler.update(System.currentTimeMillis());
             } catch (Exception ignored) {}
         }
-
+        return turn_completed;
     }
 
     private boolean turn_relative_start(double angle) {
@@ -694,7 +706,7 @@ public class Common_Teleop {
             return turn_completed;
         }
 
-        setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
+        //setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Helper lambdas for angle normalization and shortest difference
         java.util.function.DoubleUnaryOperator norm = (v) -> {
@@ -708,7 +720,7 @@ public class Common_Teleop {
 
         // Read current heading (degrees)
         turn_relative_currentYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-        turn_relative_targetYaw = norm.applyAsDouble(currentYaw + angle);
+        turn_relative_targetYaw = norm.applyAsDouble(turn_relative_currentYaw + angle);
 
 
         long startMs = System.currentTimeMillis();

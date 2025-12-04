@@ -158,7 +158,7 @@ public class TestCode extends OpMode {
 
         // Stopper initial position
         stopperServo.setPosition(GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-        
+
 
 
         telemetry.addData("Status", "Initialized");
