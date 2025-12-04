@@ -3,10 +3,7 @@ package org.firstinspires.ftc.teamcode.params;
 public class AutonFarParams {
 
 
-    public final long LAUNCHER_POS1_RPM = 4500;
-
-    public final long LAUNCHER_BACKSHOOT_COMENEAR_RPM=2900;
-
+    public final long LAUNCHER_POS1_RPM = 3500;
 
     public final double BALLPUSHER_MAX_VELOCITY =3200;
     public final double INTAKE_MAX_VELOCITY =3200;
