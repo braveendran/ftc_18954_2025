@@ -12,6 +12,8 @@ import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.hardware.limelightvision.LLResult;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+
 public class AutonMovement {
     
     private LinearOpMode opMode;
@@ -286,7 +288,7 @@ public class AutonMovement {
         } else { // RED
             objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1+ farParams.DIST_ROW1_ADDITIONAL_RETURN, farParams.STRAFE_TIMEOUT);
             //objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,-farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
-            turn_to_shoot_angle=objCommonFunc.turn_to_shoot(farParams.TURN_SPEED,farParams.DIST_ROW1+ farParams.DIST_ROW1_ADDITIONAL_RETURN, farParams.TURN_TIMEOUT, CameraResult, mLocalizer);
+            turn_to_shoot_angle=objCommonFunc.turn_to_shoot(farParams.TURN_SPEED,farParams.TURN_TO_COLLECT,-farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT, CameraResult, mLocalizer);
     
         }
         PeriodicUpdate(System.currentTimeMillis());

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.logic.Common_Teleop;
 
 import org.firstinspires.ftc.teamcode.logic.DistVelocityProjection;
 import java.util.function.Consumer;
-
+import com.qualcomm.hardware.limelightvision.LLResult;
 
 public class CommonFunc_18954 {
 
@@ -304,7 +304,7 @@ public class CommonFunc_18954 {
         double angle_turned=relative_angle;
         if(use_localizer_turn && (CameraResult != null && CameraResult.isValid()) && (mlocalize!=null))
         {
-            mlocalize.turn_relative(speed,mlocalize.getHeadingCorrectionDeg(),timeoutS,CameraResult);
+            turn_relative(speed,mlocalize.getHeadingCorrectionDeg(),timeoutS);
             relative_angle=mlocalize.getHeadingCorrectionDeg();
 
         }
