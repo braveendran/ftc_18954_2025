@@ -128,6 +128,10 @@ public class Common_Teleop {
     // System timer
     private long systemStartTime = 0;
     private boolean systemTimerStarted = false;
+    
+    // Autonomous parking system
+    private boolean autoParkingActive = false;
+    private boolean autoParkingCompleted = false;
 
     //Reference from OpMode
     private OpMode opMode;
@@ -255,21 +259,42 @@ public class Common_Teleop {
         }
 
 
+        // ---------------- AUTONOMOUS PARKING TRIGGER ----------------
+        long elapsedTime = System.currentTimeMillis() - systemStartTime;
+        if (!autoParkingActive && !autoParkingCompleted && 
+            elapsedTime >= CommonDefs.MIN_TIME_TO_PARK &&
+            this.opMode.gamepad1.right_trigger > 0.8 && this.opMode.gamepad1.left_trigger > 0.8) {
+            
+            // Trigger autonomous parking
+            autoParkingActive = true;
+            if (mLocalizer != null) {
+                Pose currentPos = mLocalizer.getCurrentFusedPosition();
+                autonomousParking(currentPos);
+            }
+        }
+        
         // ---------------- DRIVE CONTROL ----------------
         double y = -this.opMode.gamepad1.left_stick_y;
         double x = this.opMode.gamepad1.left_stick_x * 1.1;
         double rx = this.opMode.gamepad1.right_stick_x;
 
-        if (this.opMode.gamepad1.right_trigger > 0.1) {
-            speedMultiplier = HIGH_SPEED;
-        } else if (this.opMode.gamepad1.left_trigger > 0.1) {
-            speedMultiplier = LOW_SPEED;
-        } else {
-            speedMultiplier = NORMAL_SPEED;
+        if (!autoParkingActive) {
+            if (this.opMode.gamepad1.right_trigger > 0.1) {
+                speedMultiplier = HIGH_SPEED;
+            } else if (this.opMode.gamepad1.left_trigger > 0.1) {
+                speedMultiplier = LOW_SPEED;
+            } else {
+                speedMultiplier = NORMAL_SPEED;
+            }
         }
 
 
-        if(shooterState == ShooterState.TURNING_TO_SHOOT)
+        if(autoParkingActive)
+        {
+            // Autonomous parking is controlling the robot
+            // Drive control will be handled by the parking function
+        }
+        else if(shooterState == ShooterState.TURNING_TO_SHOOT)
         {
             //turning will be controlled in the state machine
         }
@@ -595,9 +620,16 @@ public class Common_Teleop {
         telemetry.addData("Long Range RPM",LAUNCHER_LONGRANGE_RPM);
         telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
         
-        // System timer
-        long elapsedTime = System.currentTimeMillis() - systemStartTime;
+        // System timer and parking status
+        elapsedTime = System.currentTimeMillis() - systemStartTime;
         telemetry.addData("System Time", String.format("%.1fs", elapsedTime / 1000.0));
+        
+        if (elapsedTime >= CommonDefs.MIN_TIME_TO_PARK) {
+            telemetry.addData("Auto Park", autoParkingActive ? "ACTIVE" : (autoParkingCompleted ? "COMPLETED" : "READY"));
+        } else {
+            long timeToParking = (CommonDefs.MIN_TIME_TO_PARK - elapsedTime) / 1000;
+            telemetry.addData("Auto Park", String.format("Available in %ds", timeToParking));
+        }
         
         // Position tracking telemetry
         if (mLocalizer != null) {
@@ -794,6 +826,108 @@ public class Common_Teleop {
         // Ensure motors are in a mode suitable for setting power directly
         turn_completed=turn_relative_main();
         return turn_completed;
+    }
+    
+    /**
+     * Autonomous parking function to navigate to alliance-specific parking area
+     * @param currentPos Current robot position from localization system
+     */
+    private void autonomousParking(Pose currentPos) {
+        // Determine target parking area based on alliance
+        double targetX, targetY;
+        
+        if (mAlliance == CommonDefs.Alliance.RED) {
+            // Navigate to red parking area (center of the box)
+            targetX = (CommonDefs.RED_ENDGAME_PARK_X_MIN + CommonDefs.RED_ENDGAME_PARK_X_MAX) / 2.0;
+            targetY = (CommonDefs.RED_ENDGAME_PARK_Y_MIN + CommonDefs.RED_ENDGAME_PARK_Y_MAX) / 2.0;
+        } else {
+            // Navigate to blue parking area (center of the box)
+            targetX = (CommonDefs.BLUE_ENDGAME_PARK_X_MIN + CommonDefs.BLUE_ENDGAME_PARK_X_MAX) / 2.0;
+            targetY = (CommonDefs.BLUE_ENDGAME_PARK_Y_MIN + CommonDefs.BLUE_ENDGAME_PARK_Y_MAX) / 2.0;
+        }
+        
+        // Execute parking maneuver
+        executeParkingManeuver(currentPos.getX(), currentPos.getY(), targetX, targetY);
+    }
+    
+    /**
+     * Execute the parking maneuver from current position to target parking area
+     */
+    private void executeParkingManeuver(double currentX, double currentY, double targetX, double targetY) {
+        final double PARKING_SPEED = 0.4; // Slower speed for precise parking
+        final double POSITION_TOLERANCE = 6.0; // inches tolerance for parking completion
+        final long PARKING_TIMEOUT = 15000; // 15 second timeout for parking
+        
+        long parkingStartTime = System.currentTimeMillis();
+        
+        while (autoParkingActive && !autoParkingCompleted && 
+               (System.currentTimeMillis() - parkingStartTime) < PARKING_TIMEOUT &&
+               opMode.opModeIsActive()) {
+               
+            // Get current position from localizer
+            Pose currentPos = (mLocalizer != null) ? mLocalizer.getCurrentFusedPosition() : new Pose(currentX, currentY, 0);
+            
+            // Calculate distance to target
+            double deltaX = targetX - currentPos.getX();
+            double deltaY = targetY - currentPos.getY();
+            double distanceToTarget = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            // Check if we've reached the target
+            if (distanceToTarget < POSITION_TOLERANCE) {
+                // Stop the robot - we've reached the parking area
+                leftFront.setPower(0);
+                rightFront.setPower(0);
+                leftBack.setPower(0);
+                rightBack.setPower(0);
+                
+                autoParkingCompleted = true;
+                autoParkingActive = false;
+                break;
+            }
+            
+            // Calculate movement direction (normalized)
+            double moveX = deltaX / distanceToTarget;
+            double moveY = deltaY / distanceToTarget;
+            
+            // Apply speed scaling based on distance (slow down as we get closer)
+            double speedScale = Math.min(1.0, distanceToTarget / 24.0); // Full speed until 24 inches away
+            speedScale = Math.max(0.2, speedScale); // Minimum 20% speed
+            
+            double adjustedSpeed = PARKING_SPEED * speedScale;
+            
+            // Convert field-relative movement to robot-relative
+            double robotHeading = currentPos.getHeading(); // in radians
+            double robotRelativeX = moveX * Math.cos(-robotHeading) - moveY * Math.sin(-robotHeading);
+            double robotRelativeY = moveX * Math.sin(-robotHeading) + moveY * Math.cos(-robotHeading);
+            
+            // Apply movement using mecanum drive
+            DriveControl_PowerBased(robotRelativeY * adjustedSpeed, robotRelativeX * adjustedSpeed, 0);
+            
+            // Update telemetry
+            telemetry.addData("Parking", "ACTIVE");
+            telemetry.addData("Distance to Park", String.format("%.1f in", distanceToTarget));
+            telemetry.addData("Target", String.format("(%.1f, %.1f)", targetX, targetY));
+            telemetry.update();
+            
+            // Small delay to prevent excessive CPU usage
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        
+        // Ensure robot is stopped when parking is complete or times out
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
+        
+        if (!autoParkingCompleted) {
+            // Timeout occurred
+            autoParkingActive = false;
+        }
     }
     
 }
