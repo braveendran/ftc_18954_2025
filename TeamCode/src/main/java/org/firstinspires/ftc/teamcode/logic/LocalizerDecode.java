@@ -172,11 +172,34 @@ public class LocalizerDecode {
             }
 
             if (isAligned) {
-                // We are aligned with one of the valid poses! Set LED to green.
-                driverIndicationLED.setGreen();
+                // Check if we're too close to target for safe shooting
+                Pose fusedPos = positionLocalizer.getCurrentFusedPosition();
+                double distanceToTarget = (alliance == Alliance.RED) ? 
+                    positionLocalizer.getDistanceToRedBasket() : positionLocalizer.getDistanceToBlueBasket();
+                
+                if (distanceToTarget < CommonDefs.TARGET_TOO_CLOSE_THRESHOLD_INCHES) {
+                    // Too close - blink the LED to warn driver
+                    driverIndicationLED.setBlinking(true);
+                    driverIndicationLED.setGreen();
+                } else {
+                    // Good distance - solid green
+                    driverIndicationLED.setBlinking(false);
+                    driverIndicationLED.setGreen();
+                }
             } else {
-                // Not aligned with any valid pose. Set LED to red.
-                driverIndicationLED.setRed();
+                Pose fusedPos = positionLocalizer.getCurrentFusedPosition();
+                double distanceToTarget = (alliance == Alliance.RED) ? 
+                    positionLocalizer.getDistanceToRedBasket() : positionLocalizer.getDistanceToBlueBasket();
+                
+                if (distanceToTarget < CommonDefs.TARGET_TOO_CLOSE_THRESHOLD_INCHES) {
+                    // Too close - blink the LED to warn driver
+                    driverIndicationLED.setBlinking(true);
+                    driverIndicationLED.setRed();
+                } else {
+                    // Good distance - solid green
+                    driverIndicationLED.setBlinking(false);
+                    driverIndicationLED.setRed();
+                }
             }
         } else {
             // No AprilTag visible, so we are not aligned. Set LED to blue.
@@ -217,6 +240,37 @@ public class LocalizerDecode {
     public Pose getCurrentOdometryPosition() {
         return positionLocalizer.getCurrentOdometryPosition();
     }
+    
+    /**
+     * Get formatted string for fused position
+     */
+    public String getFusedPositionString() {
+        Pose fusedPos = positionLocalizer.getCurrentFusedPosition();
+        return String.format("x:%.2f y:%.2f h:%.2f", 
+            fusedPos.getX(), fusedPos.getY(), Math.toDegrees(fusedPos.getHeading()));
+    }
+    
+    /**
+     * Get formatted string for camera-only position
+     */
+    public String getCameraPositionString() {
+        Pose cameraPos = positionLocalizer.getCurrentCameraPosition();
+        String status = positionLocalizer.isCameraAvailable() ? "" : "(stale)";
+        return String.format("x:%.2f y:%.2f h:%.2f%s", 
+            cameraPos.getX(), cameraPos.getY(), Math.toDegrees(cameraPos.getHeading()), status);
+    }
+    
+    /**
+     * Get formatted string for encoder-only position
+     */
+    public String getEncoderPositionString() {
+        if (!positionLocalizer.isOdometryInitialized()) {
+            return "x:-- y:-- h:-- (uninitialized)";
+        }
+        Pose encoderPos = positionLocalizer.getCurrentOdometryPosition();
+        return String.format("x:%.2f y:%.2f h:%.2f", 
+            encoderPos.getX(), encoderPos.getY(), Math.toDegrees(encoderPos.getHeading()));
+    }
 
     /**
      * Private class for combining odometry pod data with camera localization
@@ -251,6 +305,7 @@ public class LocalizerDecode {
         private double odometryX = 72.0;
         private double odometryY = 72.0;
         private double odometryHeading = 0.0;
+        private boolean odometryInitialized = false; // Track if odometry has been initialized
         
         // Previous encoder readings
         private long previousForwardTicks = 0;
@@ -273,10 +328,16 @@ public class LocalizerDecode {
             double clampedY = Math.max(0, Math.min(FIELD_SIZE_INCHES, startY));
             double normalizedHeading = normalizeAngle(startHeading);
             
-            // Initialize all position tracking systems to same starting point
-            this.fusedX = this.cameraX = this.odometryX = clampedX;
-            this.fusedY = this.cameraY = this.odometryY = clampedY;
-            this.fusedHeading = this.cameraHeading = this.odometryHeading = normalizedHeading;
+            // Initialize fused and camera positions to starting point
+            this.fusedX = this.cameraX = clampedX;
+            this.fusedY = this.cameraY = clampedY;
+            this.fusedHeading = this.cameraHeading = normalizedHeading;
+            
+            // Odometry starts uninitialized
+            this.odometryX = 72.0;
+            this.odometryY = 72.0;
+            this.odometryHeading = 0.0;
+            this.odometryInitialized = false;
         }
         
         /**
@@ -295,8 +356,16 @@ public class LocalizerDecode {
          * @param currentTimeMs Current system time in milliseconds
          */
         public void periodicUpdate(long forwardTicks, long straferTicks, LLResult cameraResult, LimeLightHandler handler, long currentTimeMs) {
-            // Update odometry-only position
-            updateOdometry(forwardTicks, straferTicks);
+            // Check for odometry initialization from camera
+            if (!odometryInitialized && cameraResult != null && cameraResult.isValid() && 
+                cameraResult.getTa() > CommonDefs.LIMELIGHT_HEADING_TARGETAREA_THRESHOLD) {
+                initializeOdometryFromCamera(cameraResult, handler);
+            }
+            
+            // Update odometry-only position (if initialized)
+            if (odometryInitialized) {
+                updateOdometry(forwardTicks, straferTicks);
+            }
             
             // Update camera-only position and fused position
             if (cameraResult != null && cameraResult.isValid()) {
@@ -307,7 +376,9 @@ public class LocalizerDecode {
                 if (currentTimeMs - lastCameraUpdateTime > CAMERA_TIMEOUT_MS) {
                     cameraAvailable = false;
                     // When camera is lost, use odometry to update camera position
-                    propagateCameraPositionFromOdometry(forwardTicks, straferTicks);
+                    if (odometryInitialized) {
+                        propagateCameraPositionFromOdometry(forwardTicks, straferTicks);
+                    }
                 }
             }
             
@@ -546,10 +617,16 @@ public class LocalizerDecode {
             double clampedY = Math.max(0, Math.min(FIELD_SIZE_INCHES, y));
             double normalizedHeading = normalizeAngle(heading);
             
-            // Reset all position tracking systems
-            fusedX = cameraX = odometryX = clampedX;
-            fusedY = cameraY = odometryY = clampedY;
-            fusedHeading = cameraHeading = odometryHeading = normalizedHeading;
+            // Reset fused and camera positions
+            fusedX = cameraX = clampedX;
+            fusedY = cameraY = clampedY;
+            fusedHeading = cameraHeading = normalizedHeading;
+            
+            // Reset odometry to uninitialized state
+            odometryX = 72.0;
+            odometryY = 72.0;
+            odometryHeading = 0.0;
+            odometryInitialized = false;
             
             cameraAvailable = false;
         }
@@ -559,6 +636,26 @@ public class LocalizerDecode {
          */
         public void setCameraWeight(double weight) {
             this.cameraWeight = Math.max(0.0, Math.min(1.0, weight));
+        }
+        
+        /**
+         * Initialize odometry position from first valid camera reading
+         */
+        private void initializeOdometryFromCamera(LLResult cameraResult, LimeLightHandler handler) {
+            Pose3D botPose = extractBotPose(cameraResult, handler);
+            if (botPose != null) {
+                odometryX = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().x);
+                odometryY = CommonDefs.ConvertCameraPosToInches_y(botPose.getPosition().y);
+                odometryHeading = normalizeAngle(botPose.getOrientation().getYaw(AngleUnit.DEGREES));
+                odometryInitialized = true;
+            }
+        }
+        
+        /**
+         * Check if odometry has been initialized
+         */
+        public boolean isOdometryInitialized() {
+            return odometryInitialized;
         }
     }
 }

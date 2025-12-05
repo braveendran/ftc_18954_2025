@@ -18,6 +18,16 @@ public class DriverIndicationLED {
     public static final double PATTERN_GREEN = 0.5;
     public static final double PATTERN_BLUE = 0.6;
     public static final double PATTERN_GRAY = 0.9;
+    
+    // Blinking patterns
+    public static final double PATTERN_BLINK_RED = 0.15;
+    public static final double PATTERN_BLINK_GREEN = 0.35;
+    public static final double PATTERN_BLINK_BLUE = 0.25;
+    
+    // Blinking state
+    private boolean blinkingMode = false;
+    private double currentSolidPattern = PATTERN_GRAY;
+    private double currentBlinkPattern = PATTERN_GRAY;
 
     /**
      * Initializes the Blinkin LED driver.
@@ -32,28 +42,65 @@ public class DriverIndicationLED {
      * Sets the LED to solid red.
      */
     public void setRed() {
-        blinkin.setPosition(PATTERN_RED);
+        currentSolidPattern = PATTERN_RED;
+        currentBlinkPattern = PATTERN_BLINK_RED;
+        updateLED();
     }
 
     /**
      * Sets the LED to solid green.
      */
     public void setGreen() {
-        blinkin.setPosition(PATTERN_GREEN);
+        currentSolidPattern = PATTERN_GREEN;
+        currentBlinkPattern = PATTERN_BLINK_GREEN;
+        updateLED();
     }
 
     /**
      * Sets the LED to solid blue.
      */
     public void setBlue() {
-        blinkin.setPosition(PATTERN_BLUE);
+        currentSolidPattern = PATTERN_BLUE;
+        currentBlinkPattern = PATTERN_BLINK_BLUE;
+        updateLED();
     }
 
     /**
      * Sets the LED to a neutral/off state.
      */
     public void off() {
+        currentSolidPattern = PATTERN_GRAY;
+        currentBlinkPattern = PATTERN_GRAY;
+        blinkingMode = false;
         blinkin.setPosition(PATTERN_GRAY);
+    }
+
+    /**
+     * Enable or disable blinking mode
+     * @param blink true to enable blinking, false for solid color
+     */
+    public void setBlinking(boolean blink) {
+        blinkingMode = blink;
+        updateLED();
+    }
+    
+    /**
+     * Get current blinking state
+     * @return true if blinking is enabled
+     */
+    public boolean isBlinking() {
+        return blinkingMode;
+    }
+    
+    /**
+     * Update the LED pattern based on current color and blinking mode
+     */
+    private void updateLED() {
+        if (blinkingMode) {
+            blinkin.setPosition(currentBlinkPattern);
+        } else {
+            blinkin.setPosition(currentSolidPattern);
+        }
     }
 
     /**
@@ -62,6 +109,8 @@ public class DriverIndicationLED {
      */
     public void setPattern(double pwmValue) {
         if (pwmValue >= 0.0 && pwmValue <= 1.0) {
+            blinkingMode = false;
+            currentSolidPattern = pwmValue;
             blinkin.setPosition(pwmValue);
         }
     }
