@@ -98,7 +98,7 @@ public class AutonMovement {
         
         // Step 3: Shoot first Power Core into the high goal
         turn_to_shoot_angle=objCommonFunc.turn_to_shoot(closeParams.TURN_SPEED,0,imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES), closeParams.TURN_TIMEOUT, CameraResult, mLocalizer);
-        objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false);
+        objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false,4);
         PeriodicUpdate(System.currentTimeMillis());
         opMode.telemetry.addData("Step 3", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();
@@ -141,7 +141,7 @@ public class AutonMovement {
         opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
-          objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false);
+          objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false,4);
         objCommonFunc.TurnOffIntake();
         PeriodicUpdate(System.currentTimeMillis());
 
@@ -256,7 +256,7 @@ public class AutonMovement {
         opMode.telemetry.update();
 
         // Step 3: Shoot first Power Core into the high goal
-        objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true);
+        objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true,4);
         PeriodicUpdate(System.currentTimeMillis());
         opMode.telemetry.addData("Step 3", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();
@@ -296,7 +296,7 @@ public class AutonMovement {
         opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
-         objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true);
+         objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true,3);
         objCommonFunc.TurnOffIntake();
         PeriodicUpdate(System.currentTimeMillis());
         opMode.telemetry.addData("Step 7", objCommonFunc.getIMUYaw());
@@ -343,14 +343,14 @@ public class AutonMovement {
         else {
 
             // END OF Auton - Go to parking
-            if (alliance == CommonDefs.Alliance.BLUE) {
-                objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT, farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
-            } else { // RED
-                objCommonFunc.turn(farParams.TURN_SPEED, -farParams.TURN_TO_COLLECT, -farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
-            }
+//            if (alliance == CommonDefs.Alliance.BLUE) {
+//                objCommonFunc.turn(farParams.TURN_SPEED + .4, farParams.TURN_TO_COLLECT, farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
+//            } else { // RED
+//                objCommonFunc.turn(farParams.TURN_SPEED + .4, -farParams.TURN_TO_COLLECT, -farParams.TURN_TO_COLLECT_ABSOLUTE, farParams.TURN_TIMEOUT);
+//            }
 
             // Move out of the shooting area for parking
-            objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW, farParams.PARKING_DISTANCE, farParams.PARKING_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
+            objCommonFunc.encoderDrive(farParams.DRIVE_SPEED_SLOW +.4, farParams.PARKING_DISTANCE, farParams.PARKING_DISTANCE, farParams.DRIVE_TIMEOUT_SHORT);
         }
         // Completion telemetry
         opMode.telemetry.addData("Autonomous", "Complete");

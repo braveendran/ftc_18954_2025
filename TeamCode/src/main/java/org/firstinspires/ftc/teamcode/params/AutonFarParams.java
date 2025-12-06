@@ -11,7 +11,7 @@ public class AutonFarParams {
     public final double DRIVE_SPEED_SLOW = 0.6;
     public final double DRIVE_SPEED_FAST = 0.6;
 
-    public final double DRIVE_SPEED_INTAKE=0.4;
+    public final double DRIVE_SPEED_INTAKE=0.5;
 
     public final double TURN_SPEED = 0.3;
 
@@ -23,7 +23,7 @@ public class AutonFarParams {
     public final double INITIAL_FORWARD_DISTANCE = 12;
     public final double COLLECTION_DISTANCE = 40;
     public final double COLLECTION_DISTANCE_ROW2 = 37;
-    public final double PARKING_DISTANCE = 18;
+    public final double PARKING_DISTANCE = 12;
     
     // Turn angles
     public final double INITIAL_TURN_ANGLE = 20;
