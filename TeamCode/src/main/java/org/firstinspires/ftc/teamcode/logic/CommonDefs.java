@@ -19,9 +19,10 @@ public class CommonDefs {
     public final static int BLUE_TAG_ID = 20;
 
     public final static double LIMELIGHT_HEADING_SHOOT_TOLERANCE_CLOSE=1.0;
-    public final static double LIMELIGHT_HEADING_SHOOT_TOLERANCE_FAR=1.0;
+    public final static double LIMELIGHT_HEADING_SHOOT_TOLERANCE_FAR=0.5;
     public final static double LIMELIGHT_HEADING_SHOOT_CLOSE_HEADING=(9.7-3.8);
-    public final static double LIMELIGHT_HEADING_SHOOT_FAR_HEADING=(5.5-6.5);
+    public final static double LIMELIGHT_HEADING_SHOOT_FAR_HEADING_BLUE=2.0;
+    public final static double LIMELIGHT_HEADING_SHOOT_FAR_HEADING_RED=-1.0;
 
     public final static double LIMELIGHT_HEADING_TARGETAREA_THRESHOLD= 0.5;
 
