@@ -263,7 +263,7 @@ public class CommonFunc_18954 {
             //telemetry.addData("Path", "Running to L:%7d R:%7d", leftFrontTarget, rightFrontTarget);
             //telemetry.addData("Current", "Running at L:%7d R:%7d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition());
             //telemetry.update();
-            callPeriodicUpdate();
+            //callPeriodicUpdate();
             opMode.sleep(MINIMAL_SLEEP_TIME);
         }
 
@@ -523,7 +523,7 @@ public class CommonFunc_18954 {
         while (opMode.opModeIsActive() && (runtime.seconds() < timeoutS) &&
                 (leftFront.isBusy() && rightFront.isBusy() && leftBack.isBusy() && rightBack.isBusy()))
         {
-            callPeriodicUpdate();
+            //callPeriodicUpdate();
             opMode.sleep(MINIMAL_SLEEP_TIME);
             // telemetry.addData("Path", "Strafing...");
             // telemetry.update();

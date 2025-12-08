@@ -176,4 +176,8 @@ public class LocalizerDecode {
     public double getHeadingCorrectionDeg() {
         return HeadingCorrectionDeg;
     }
+
+    public void Stop() {
+        this.limeLightHandler.stop();
+    }
 }
