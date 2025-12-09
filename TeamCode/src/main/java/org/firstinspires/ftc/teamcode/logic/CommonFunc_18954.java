@@ -116,8 +116,9 @@ public class CommonFunc_18954 {
         setMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        forward_pod.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        forward_pod.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        ballPusherMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        forward_pod.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         ballPusherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
 
@@ -142,6 +143,10 @@ public class CommonFunc_18954 {
         StartingYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
 
         mDistanceDistVelocityProjection = new DistVelocityProjection();
+
+        //reset the forward and strafer encoders
+
+
 
         telemetry.addData("Status", "Hardware Initialized");
         telemetry.update();

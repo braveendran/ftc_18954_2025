@@ -28,7 +28,7 @@ public class Common_Teleop {
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
     DcMotor launcherMotor;
-    DcMotorEx lateralEncoder; // Forward odometry pod
+    DcMotorEx forward_pod; // Forward odometry pod
     DcMotorEx ballPusherMotor, intakeMotor; // ballPusherMotor also serves as strafer pod
 
 
@@ -153,7 +153,7 @@ public class Common_Teleop {
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
-        lateralEncoder = hardwareMap.get(DcMotorEx.class,"lateralencoder");
+        forward_pod = hardwareMap.get(DcMotorEx.class,"lateralencoder");
         //launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
 
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
@@ -185,6 +185,11 @@ public class Common_Teleop {
         //launcherBottomMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         //launcherMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
+        forward_pod.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        ballPusherMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        forward_pod.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ballPusherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         // Stopper initial position
         stopperServo.setPosition(GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
 
@@ -204,7 +209,7 @@ public class Common_Teleop {
         if(ENABLE_LIMEIGHT_CAMERA)
         {
             mLocalizer = new LocalizerDecode(mAlliance, mLimeLightHandler, mDriverIndicationLED, 
-                                           lateralEncoder, ballPusherMotor);
+                                           forward_pod, ballPusherMotor);
         }
         else
         {
@@ -640,7 +645,7 @@ public class Common_Teleop {
             telemetry.addData("Pos Encoder", mLocalizer.getEncoderPositionString());
         }
 
-        telemetry.addData("forward_position", String.format("%d", lateralEncoder.getCurrentPosition()));
+        telemetry.addData("forward_position", String.format("%d", forward_pod.getCurrentPosition()));
         telemetry.addData("strafer_position", String.format("%d", ballPusherMotor.getCurrentPosition()));
 
         //telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
