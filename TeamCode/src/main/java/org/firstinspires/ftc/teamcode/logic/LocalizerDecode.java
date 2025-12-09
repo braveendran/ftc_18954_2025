@@ -140,10 +140,19 @@ public class LocalizerDecode {
                 }
                 else
                 {
-                    HeadingCorrectionDeg =deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_FAR_HEADING;
+                    double FarHeadingToUse=0.0;
+                    if(alliance == Alliance.BLUE)
+                    {
+                        FarHeadingToUse=CommonDefs.LIMELIGHT_HEADING_SHOOT_FAR_HEADING_BLUE;
+                    }
+                    else
+                    {
+                        FarHeadingToUse=CommonDefs.LIMELIGHT_HEADING_SHOOT_FAR_HEADING_RED;
+                    }
+                    HeadingCorrectionDeg =deltaHeading - FarHeadingToUse;
                     HeadingCorrectionDeg =HeadingCorrectionDeg*-1;
                     //Far shooting
-                    headingMatch = Math.abs(deltaHeading - CommonDefs.LIMELIGHT_HEADING_SHOOT_FAR_HEADING) <= CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_FAR;
+                    headingMatch = Math.abs(deltaHeading - FarHeadingToUse) <= CommonDefs.LIMELIGHT_HEADING_SHOOT_TOLERANCE_FAR;
                 }
 
                 // Check if position is within tolerance (using distance formula)
@@ -669,5 +678,9 @@ public class LocalizerDecode {
         public boolean isOdometryInitialized() {
             return odometryInitialized;
         }
+    }
+
+    public void Stop() {
+        this.limeLightHandler.stop();
     }
 }

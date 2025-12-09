@@ -45,7 +45,7 @@ public class Common_Teleop {
     private double speedMultiplier = NORMAL_SPEED;
 
     // ---------------- LAUNCHER SETTINGS ----------------
-    public static long  LAUNCHER_SHORTTANGE_RPM = 2800;
+    public static long  LAUNCHER_SHORTTANGE_RPM = 2850;
     public static  long LAUNCHER_LONGRANGE_RPM = 3500;
     public static final  long LAUNCHER_RPM_TOLERANCE = 100;
 

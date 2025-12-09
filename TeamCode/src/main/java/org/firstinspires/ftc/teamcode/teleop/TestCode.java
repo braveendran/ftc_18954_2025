@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 @TeleOp(name = "TestCode", group = "Test")
-@Disabled
+
 public class TestCode extends OpMode {
 
     // ---------------- HARDWARE DECLARATION ----------------

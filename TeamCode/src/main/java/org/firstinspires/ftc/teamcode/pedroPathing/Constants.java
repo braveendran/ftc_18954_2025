@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
+import com.pedropathing.ftc.localization.Encoder;
 import com.pedropathing.ftc.localization.constants.TwoWheelConstants;
 import com.pedropathing.paths.PathConstraints;
 
@@ -14,7 +15,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(9.5);
+            .mass(9.5)
+            .forwardZeroPowerAcceleration(-34.71312481595402)
+            .lateralZeroPowerAcceleration(-69.60910472724154);
+
+
+
 
     public static MecanumConstants driveConstants = new MecanumConstants()
             .maxPower(1)
@@ -26,6 +32,8 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .xVelocity(42.141206834156094)
+            .yVelocity(52.2662046756873)
             ;
 
 
@@ -39,8 +47,10 @@ public class Constants {
                             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
                     )
             )
-            .forwardPodY(3.25)
-            .strafePodX(4.5);
+            .forwardTicksToInches(0.0078319)
+            .strafeTicksToInches(0.0021526)
+            .forwardPodY(2.6)
+            .strafePodX(5.35);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
@@ -51,4 +61,5 @@ public class Constants {
                 .mecanumDrivetrain(driveConstants)
                 .build();
     }
+
 }
