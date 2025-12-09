@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.logic.CommonDefs;
 import org.firstinspires.ftc.teamcode.logic.CommonFunc_18954;
 import org.firstinspires.ftc.teamcode.params.AutonCloseParams;
@@ -9,6 +10,8 @@ import org.firstinspires.ftc.teamcode.params.AutonFarParams;
 import org.firstinspires.ftc.teamcode.logic.LimeLightHandler;
 import org.firstinspires.ftc.teamcode.logic.LocalizerDecode;
 import org.firstinspires.ftc.teamcode.logic.DriverIndicationLED;
+
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.hardware.limelightvision.LLResult;
 
@@ -32,12 +35,12 @@ public class AutonMovement {
 
     
     // Constructor for Close positioning
-    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
-        this(opMode, alliance, positionType, false);
-    }
+//    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType) {
+//        this(opMode, alliance, positionType, false);
+//    }
     
     // Constructor with two-row mode option
-    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType, boolean twoRowMode) {
+    public AutonMovement(LinearOpMode opMode, CommonDefs.Alliance alliance, CommonDefs.PositionType positionType, boolean twoRowMode ) {
         this.opMode = opMode;
         this.alliance = alliance;
         this.positionType = positionType;
@@ -45,11 +48,13 @@ public class AutonMovement {
         this.closeParams = new AutonCloseParams();
         this.farParams = new AutonFarParams();
         this.objCommonFunc = new CommonFunc_18954(opMode, alliance, this::PeriodicUpdate);
+        objCommonFunc.initializeHardware();
+
         mDriverIndicationLED = new DriverIndicationLED(opMode.hardwareMap);
         // Note: IMU and other hardware will be initialized when initializeHardware() is called in the sequence methods
         imu = opMode.hardwareMap.get(IMU.class, "imu"); // Get IMU directly from hardware map
         mLimeLightHandler = new LimeLightHandler(imu, opMode.hardwareMap, alliance);
-        mLocalizer = new LocalizerDecode(alliance, mLimeLightHandler, mDriverIndicationLED);
+        mLocalizer = new LocalizerDecode(alliance, mLimeLightHandler, mDriverIndicationLED , this.objCommonFunc.Get_Forwardpod(), this.objCommonFunc.Get_StraferPod() );
     }
     
     public void runAutonomousSequence() {
@@ -69,7 +74,7 @@ public class AutonMovement {
     private void runCloseAutonomousSequence() {
         double turn_to_shoot_angle=0.0;
         // ---------------- INIT & HARDWARE MAPPING ----------------
-        objCommonFunc.initializeHardware();
+
         
         // ---------------- VISION INITIALIZATION (Placeholder) ----------------
         // In a real robot, you would initialize your camera and TensorFlow/AprilTag pipeline here.
@@ -281,12 +286,14 @@ public class AutonMovement {
         if (alliance == CommonDefs.Alliance.BLUE) {
             objCommonFunc.strafe_left(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1 + farParams.DIST_ROW1_ADDITIONAL_RETURN, farParams.STRAFE_TIMEOUT);
             //objCommonFunc.turn(farParams.TURN_SPEED,, farParams.TURN_TIMEOUT);
+            PeriodicUpdate(System.currentTimeMillis());
             turn_to_shoot_angle=objCommonFunc.turn_to_shoot(farParams.TURN_SPEED ,-farParams.TURN_TO_COLLECT,farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT, CameraResult, mLocalizer);
     
         } else { // RED
             objCommonFunc.strafe_right(farParams.DRIVE_SPEED_SLOW, farParams.DIST_ROW1+ farParams.DIST_ROW1_ADDITIONAL_RETURN, farParams.STRAFE_TIMEOUT);
             //objCommonFunc.turn(farParams.TURN_SPEED, farParams.TURN_TO_COLLECT,-farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT);
-            turn_to_shoot_angle=objCommonFunc.turn_to_shoot(farParams.TURN_SPEED,farParams.DIST_ROW1+ farParams.DIST_ROW1_ADDITIONAL_RETURN, farParams.TURN_TIMEOUT, CameraResult, mLocalizer);
+            PeriodicUpdate(System.currentTimeMillis());
+            turn_to_shoot_angle=objCommonFunc.turn_to_shoot(farParams.TURN_SPEED,farParams.TURN_TO_COLLECT,-farParams.INITIAL_TURN_ANGLE, farParams.TURN_TIMEOUT, CameraResult, mLocalizer);
     
         }
         PeriodicUpdate(System.currentTimeMillis());

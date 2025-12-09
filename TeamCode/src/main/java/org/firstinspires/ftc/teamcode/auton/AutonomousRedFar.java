@@ -12,7 +12,7 @@ public class AutonomousRedFar extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        autonMovement = new AutonMovement(this, CommonDefs.Alliance.RED, CommonDefs.PositionType.FAR);
+        autonMovement = new AutonMovement(this, CommonDefs.Alliance.RED, CommonDefs.PositionType.FAR,false);
         autonMovement.runAutonomousSequence();
     }
 }

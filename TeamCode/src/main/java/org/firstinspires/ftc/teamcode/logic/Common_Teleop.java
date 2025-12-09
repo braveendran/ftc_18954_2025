@@ -28,8 +28,10 @@ public class Common_Teleop {
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
     DcMotor launcherMotor;
-    DcMotor lateralEncoder; // Forward odometry pod
+    DcMotorEx lateralEncoder; // Forward odometry pod
     DcMotorEx ballPusherMotor, intakeMotor; // ballPusherMotor also serves as strafer pod
+
+
     Servo stopperServo;
 
     private CommonDefs.Alliance mAlliance;
@@ -151,7 +153,7 @@ public class Common_Teleop {
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
-        lateralEncoder = hardwareMap.dcMotor.get("lateralencoder");
+        lateralEncoder = hardwareMap.get(DcMotorEx.class,"lateralencoder");
         //launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
 
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
@@ -405,8 +407,8 @@ public class Common_Teleop {
                     // Use dynamic RPM based on distance to target
                     Pose fusedPos = mLocalizer.getCurrentFusedPosition();
                     double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
-                        mLocalizer.getPositionLocalizer().getDistanceToRedBasket() :
-                        mLocalizer.getPositionLocalizer().getDistanceToBlueBasket();
+                        mLocalizer.getDistanceToRedBasket() :
+                        mLocalizer.getDistanceToBlueBasket();
                     Target_RPM_Shooting = (long)mDistVelocityProjection.getVelocity(distanceToTarget);
                 } else if (shortRangeMode) {
                     Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
@@ -562,8 +564,8 @@ public class Common_Teleop {
                 // Use dynamic RPM based on distance to target
                 Pose fusedPos = mLocalizer.getCurrentFusedPosition();
                 double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
-                    mLocalizer.getPositionLocalizer().getDistanceToRedBasket() :
-                    mLocalizer.getPositionLocalizer().getDistanceToBlueBasket();
+                    mLocalizer.getDistanceToRedBasket() :
+                    mLocalizer.getDistanceToBlueBasket();
                 Target_RPM_Shooting = (long)mDistVelocityProjection.getVelocity(distanceToTarget);
             } else if (shortRangeMode) {
                 Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
@@ -660,8 +662,8 @@ public class Common_Teleop {
                 
                 if (dynamicRPM_distancebased && mLocalizer != null) {
                     double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
-                        mLocalizer.getPositionLocalizer().getDistanceToRedBasket() :
-                        mLocalizer.getPositionLocalizer().getDistanceToBlueBasket();
+                        mLocalizer.getDistanceToRedBasket() :
+                        mLocalizer.getDistanceToBlueBasket();
                     telemetry.addData("Target Distance", String.format("%.1f in", distanceToTarget));
                     telemetry.addData("Dynamic RPM", (long)mDistVelocityProjection.getVelocity(distanceToTarget));
                 }
@@ -861,8 +863,8 @@ public class Common_Teleop {
         long parkingStartTime = System.currentTimeMillis();
         
         while (autoParkingActive && !autoParkingCompleted && 
-               (System.currentTimeMillis() - parkingStartTime) < PARKING_TIMEOUT &&
-               opMode.opModeIsActive()) {
+               (System.currentTimeMillis() - parkingStartTime) < PARKING_TIMEOUT
+        ) {
                
             // Get current position from localizer
             Pose currentPos = (mLocalizer != null) ? mLocalizer.getCurrentFusedPosition() : new Pose(currentX, currentY, 0);

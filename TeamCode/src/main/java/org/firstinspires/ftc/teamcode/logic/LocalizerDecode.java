@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +25,8 @@ public class LocalizerDecode {
     private final Alliance alliance;
     
     // Encoder references for odometry pods
-    private final DcMotor lateralEncoder;    // Forward pod
-    private final DcMotor ballPusherMotor;   // Strafer pod
+    private final DcMotorEx lateralEncoder;    // Forward pod
+    private final DcMotorEx ballPusherMotor;   // Strafer pod
     
     // Position localization instance
     private final PositionLocalization positionLocalizer;
@@ -60,16 +61,16 @@ public class LocalizerDecode {
      * @param alliance The alliance color (RED or BLUE).
      * @param limeLightHandler An initialized LimeLightHandler instance.
      * @param driverIndicationLED An initialized DriverIndicationLED instance.
-     * @param lateralEncoder The lateral encoder motor (forward pod).
-     * @param ballPusherMotor The ball pusher motor (strafer pod).
+     * @param forwardpod The lateral encoder motor (forward pod).
+     * @param starferpod The ball pusher motor (strafer pod).
      */
-    public LocalizerDecode(Alliance alliance, LimeLightHandler limeLightHandler, DriverIndicationLED driverIndicationLED, 
-                          DcMotor lateralEncoder, DcMotor ballPusherMotor) {
+    public LocalizerDecode(Alliance alliance, LimeLightHandler limeLightHandler, DriverIndicationLED driverIndicationLED,
+                           DcMotorEx forwardpod, DcMotorEx starferpod) {
         this.alliance = alliance;
         this.limeLightHandler = limeLightHandler;
         this.driverIndicationLED = driverIndicationLED;
-        this.lateralEncoder = lateralEncoder;
-        this.ballPusherMotor = ballPusherMotor;
+        this.lateralEncoder = forwardpod;
+        this.ballPusherMotor = starferpod;
         this.validPoses = new ArrayList<>();
 
         // Populate the list of valid poses based on the alliance.
@@ -218,6 +219,14 @@ public class LocalizerDecode {
      */
     public PositionLocalization getPositionLocalizer() {
         return positionLocalizer;
+    }
+
+    public double getDistanceToRedBasket(){
+        return positionLocalizer.getDistanceToRedBasket();
+    }
+
+    public double getDistanceToBlueBasket(){
+        return positionLocalizer.getDistanceToBlueBasket();
     }
     
     /**

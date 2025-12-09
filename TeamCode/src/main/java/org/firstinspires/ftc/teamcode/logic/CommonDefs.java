@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.logic;
 
+import com.pedropathing.geometry.Pose;
+
 /**
  * Common definitions and enums used across the autonomous system
  */
@@ -156,6 +158,8 @@ public class CommonDefs {
         //convert metres to inches
         return  (z*39.37);
     }
+
+
 
 
 

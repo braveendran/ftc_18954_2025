@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.logic;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
@@ -25,7 +26,7 @@ public class CommonFunc_18954 {
     private Telemetry telemetry;
 
     DcMotor leftFront, rightFront, leftBack, rightBack,launcherMotor;
-    DcMotorEx ballPusherMotor, intakeMotor;
+    DcMotorEx ballPusherMotor, intakeMotor, forward_pod;
     Servo stopperServo;
 
     boolean bShooterRunning=false;
@@ -96,6 +97,7 @@ public class CommonFunc_18954 {
         launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         stopperServo = hardwareMap.get(Servo.class, "stopperServo");
+        forward_pod = hardwareMap.get(DcMotorEx.class,"lateralencoder");
 
         // Motor directions
         leftFront.setDirection(DcMotor.Direction.REVERSE);
@@ -106,11 +108,19 @@ public class CommonFunc_18954 {
         ballPusherMotor.setDirection(DcMotor.Direction.REVERSE);
         launcherMotor.setDirection(DcMotor.Direction.REVERSE);
         intakeMotor.setDirection(DcMotor.Direction.REVERSE);
+        forward_pod.setDirection(DcMotor.Direction.REVERSE);
+
+
 
         // Reset encoders and set motor modes
         setMotorModes(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMotorModes(DcMotor.RunMode.RUN_USING_ENCODER);
         launcherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        forward_pod.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        ballPusherMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
 
         // Zero power behavior
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -136,6 +146,18 @@ public class CommonFunc_18954 {
         telemetry.addData("Status", "Hardware Initialized");
         telemetry.update();
     }
+
+    public DcMotorEx Get_Forwardpod()
+    {
+        return forward_pod;
+    }
+
+    public DcMotorEx Get_StraferPod()
+    {
+        return ballPusherMotor;
+    }
+
+
 
     public void StartShooter(long LauncherRPM, double BallPusherVelocity) {
         intakeMotor.setVelocity(3200);
@@ -299,12 +321,12 @@ public class CommonFunc_18954 {
      * Method to turn the robot. A positive angle turns left.
      */
 
-    public double turn_to_shoot(double speed, double relative_angle,double absolute_angle, double timeoutS,LLResult CameraResult, LocalizerDecode mlocalize) {
+    public double turn_to_shoot(double speed, double relative_angle, double absolute_angle, double timeoutS, LLResult CameraResult, LocalizerDecode mlocalize) {
 
         double angle_turned=relative_angle;
         if(use_localizer_turn && (CameraResult != null && CameraResult.isValid()) && (mlocalize!=null))
         {
-            mlocalize.turn_relative(speed,mlocalize.getHeadingCorrectionDeg(),timeoutS,CameraResult);
+            turn_relative(speed,mlocalize.getHeadingCorrectionDeg(),timeoutS);
             relative_angle=mlocalize.getHeadingCorrectionDeg();
 
         }
@@ -320,7 +342,7 @@ public class CommonFunc_18954 {
             }
         }
 
-        return angle_turned;
+        return relative_angle;
     }
 
     public void turn(double speed, double relative_angle,double absolute_angle, double timeoutS) {
