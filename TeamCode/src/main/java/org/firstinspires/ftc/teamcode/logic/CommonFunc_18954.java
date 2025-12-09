@@ -160,10 +160,9 @@ public class CommonFunc_18954 {
 
 
     public void StartShooter(long LauncherRPM, double BallPusherVelocity) {
-        intakeMotor.setVelocity(3200);
+        intakeMotor.setPower(CommonDefs.IntakePower);
         setLauncherRPM(LauncherRPM);
-        //launcherMotor.setPower(LauncherRPM);
-        //ballPusherMotor.setVelocity(3200);
+
         bShooterRunning=true;
     }
     /**
@@ -180,7 +179,7 @@ public class CommonFunc_18954 {
         if(!bShooterRunning) {
             StartShooter(LauncherRPM,BallPusherVelocity);
         }
-        intakeMotor.setVelocity(0);
+        intakeMotor.setPower(0);
         stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
         opMode.sleep(400);
 
@@ -190,10 +189,10 @@ public class CommonFunc_18954 {
 
             if(i >= 2)
             {
-                intakeMotor.setVelocity(3200);
+                intakeMotor.setPower(CommonDefs.IntakePower);
             }
 
-            ballPusherMotor.setVelocity(3200);
+            ballPusherMotor.setPower(CommonDefs.BallPusher_IntakePower);
             // Open the stopper to feed the Power Core
             shooter_start_time = System.currentTimeMillis();
             while (opMode.opModeIsActive() && ( Math.abs (getLauncherRpm() - LauncherRPM) >= Common_Teleop.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Common_Teleop.MAX_WAITTIME_ACHIEVING_RPM))
@@ -215,7 +214,6 @@ public class CommonFunc_18954 {
             }
             callPeriodicUpdate();
 
-            //ballPusherMotor.setVelocity(0);
             // Close the stopper and turn off the launcher
             stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
             opMode.sleep((long)(Common_Teleop.SHOOTING_POSITION_TIME));
@@ -223,7 +221,7 @@ public class CommonFunc_18954 {
         }
 
         setLauncherRPM(0);
-        ballPusherMotor.setVelocity(0);
+        ballPusherMotor.setPower(0);
 
         bShooterRunning=false;
 
@@ -231,14 +229,14 @@ public class CommonFunc_18954 {
 
     public void TurnOnIntake(double IntakeVelocity,double BallPusherVelocity)
     {
-        intakeMotor.setVelocity(IntakeVelocity);
-        ballPusherMotor.setVelocity(BallPusherVelocity);
+        intakeMotor.setPower(CommonDefs.IntakePower);
+        ballPusherMotor.setPower(CommonDefs.BallPusher_IntakePower);
     }
 
     public void TurnOffIntake()
     {
-        intakeMotor.setVelocity(0);
-        ballPusherMotor.setVelocity(0);
+        intakeMotor.setPower(0);
+        ballPusherMotor.setPower(0);
     }
 
 

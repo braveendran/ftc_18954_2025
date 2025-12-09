@@ -94,6 +94,9 @@ public class CommonDefs {
     public static final double X_AUTONPARK_CLOSE=10;
     public static final double Y_AUTONPARK_CLOSE=125;
 
+    public static final double IntakePower=1.0;
+    public static final double BallPusher_IntakePower=1.0;
+
 
 
 
