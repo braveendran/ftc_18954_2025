@@ -249,7 +249,7 @@ public class Common_Teleop {
             systemTimerStarted = true;
         }
 
-        Pose3D pose=null;
+
         LLResult limelight_result = null;
         double diff_percent=0;
 
@@ -648,15 +648,10 @@ public class Common_Teleop {
 
         if(ENABLE_LIMEIGHT_CAMERA){
             if(limelight_result != null && limelight_result.isValid())  {
-                pose=mLimeLightHandler.getLast_botpose();
+                Pose3D pose=limelight_result.getBotpose();
                 telemetry.addData("tx", String.format("%.3f", (limelight_result.getTx())));
                 telemetry.addData("heading corr", String.format("%.3f", mLocalizer.getHeadingCorrectionDeg()));
-                telemetry.addData("X", CommonDefs.ConvertCameraPosToInches_x(pose.getPosition().x));
-                telemetry.addData("Y", CommonDefs.ConvertCameraPosToInches_y(pose.getPosition().y));
- //               telemetry.addData("Z", CommonDefs.ConvertCameraPosToInches_z(pose.getPosition().z));
-                telemetry.addData("Heading", pose.getOrientation().getYaw(AngleUnit.DEGREES));
- //               telemetry.addData("Pitch", pose.getOrientation().getPitch(AngleUnit.DEGREES));
- //               telemetry.addData("Roll", pose.getOrientation().getRoll(AngleUnit.DEGREES));
+                telemetry.addData("Raw Cam X:Y:H->", String.format("%.3f ,%.3f ,%.3f", pose.getPosition().x,pose.getPosition().y,pose.getOrientation().getYaw(AngleUnit.DEGREES)));
                 telemetry.addData("turn_relative_currentYaw", turn_relative_currentYaw);
                 telemetry.addData("turn_relative_targetYaw", turn_relative_targetYaw);
                 
@@ -786,12 +781,7 @@ public class Common_Teleop {
         rightFront.setPower(rightPower);
         rightBack.setPower(rightPower);
 
-        // Update Limelight (if present) to keep vision data fresh while turning
-        if (mLimeLightHandler != null) {
-            try {
-                mLimeLightHandler.update(System.currentTimeMillis());
-            } catch (Exception ignored) {}
-        }
+
         return turn_completed;
     }
 

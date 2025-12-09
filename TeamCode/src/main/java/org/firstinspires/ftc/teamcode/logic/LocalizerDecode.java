@@ -153,7 +153,7 @@ public class LocalizerDecode {
                     if(CommonDefs.LOCALIZER_CHECK_DISTANCE_MATCH)
                     {
                         // Use LimeLightHandler's transform to get field coordinates in inches
-                        Pose transformed = limeLightHandler.transformBotposeToFieldInches(botPose);
+                        Pose transformed = limeLightHandler.getBotPoseInFieldInches();
                         double currentX = transformed.getX();
                         double currentY = transformed.getY();
 
@@ -432,7 +432,7 @@ public class LocalizerDecode {
             Pose3D botPose = extractBotPose(cameraResult, handler);
             if (botPose != null) {
                 // Convert camera coordinates to field coordinates using handler transform
-                Pose camPose = handler.transformBotposeToFieldInches(botPose);
+                Pose camPose = handler.getBotPoseInFieldInches();
                 double camX = camPose.getX();
                 double camY = camPose.getY();
                 double camHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));
@@ -487,7 +487,7 @@ public class LocalizerDecode {
         private void updateCameraPosition(LLResult cameraResult, LimeLightHandler handler, long currentTimeMs) {
             Pose3D botPose = extractBotPose(cameraResult, handler);
             if (botPose != null) {
-                Pose camPose = handler.transformBotposeToFieldInches(botPose);
+                Pose camPose = handler.getBotPoseInFieldInches();
                 cameraX = camPose.getX();
                 cameraY = camPose.getY();
                 cameraHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));

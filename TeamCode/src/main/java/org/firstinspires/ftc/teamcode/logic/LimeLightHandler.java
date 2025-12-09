@@ -74,11 +74,11 @@ public class LimeLightHandler {
      *   fieldY_inches = FIELD_CENTER_INCHES + limelightY_inches
      *   fieldHeading_deg = normalize(180 - limelightHeading_deg)
      *
-     * @param botPose limelight Pose3D (meters)
+
      * @return Pose with x,y in inches and heading in radians (same Pose class used elsewhere)
      */
-    public Pose transformBotposeToFieldInches(Pose3D botPose) {
-        if (botPose == null) return null;
+    public Pose getBotPoseInFieldInches() {
+        Pose3D botPose = this.getLast_botpose();
 
         // Convert limelight meters to inches using existing helpers
         double limelightX_in = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().y);
@@ -92,11 +92,19 @@ public class LimeLightHandler {
         double fieldY = FIELD_CENTER_IN + limelightY_in;
 
         // Convert heading (yaw) from limelight frame to field frame (degrees)
-        double limelightYawDeg = botPose.getOrientation().getYaw(AngleUnit.DEGREES);
-        double fieldYawDeg = 180.0 - limelightYawDeg;
-        // Normalize to [-180,180]
-        while (fieldYawDeg > 180.0) fieldYawDeg -= 360.0;
-        while (fieldYawDeg <= -180.0) fieldYawDeg += 360.0;
+        double fieldYawDeg = botPose.getOrientation().getYaw(AngleUnit.DEGREES);
+        if(fieldYawDeg>= 0 && fieldYawDeg < 90)
+        {
+            fieldYawDeg = -(Math.abs(90-fieldYawDeg));
+        }
+        else if(fieldYawDeg>= 90)
+        {
+            fieldYawDeg -=90;
+        }
+        else if(fieldYawDeg < 0)
+        {
+            fieldYawDeg= 90 + Math.abs(fieldYawDeg);
+        }
 
         // Return Pose with heading in radians (consistent with existing Pose usage)
         return new Pose(fieldX, fieldY, Math.toRadians(fieldYawDeg));
