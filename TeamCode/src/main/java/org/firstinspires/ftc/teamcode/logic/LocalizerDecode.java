@@ -438,7 +438,7 @@ public class LocalizerDecode {
          * Fuse camera localization data with odometry
          */
         private void fuseCameraData(LLResult cameraResult, long currentTimeMs, LimeLightHandler handler) {
-            Pose3D botPose = extractBotPose(cameraResult, handler);
+            Pose botPose = extractBotPose(cameraResult, handler);
             if (botPose != null) {
                 // Convert camera coordinates to field coordinates using handler transform
                 Pose camPose = handler.getBotPoseInFieldInches();
@@ -466,9 +466,9 @@ public class LocalizerDecode {
         /**
          * Extract bot pose from LLResult using the parent's LimeLightHandler
          */
-        private Pose3D extractBotPose(LLResult result, LimeLightHandler handler) {
+        private Pose extractBotPose(LLResult result, LimeLightHandler handler) {
             if (result != null && result.isValid() && handler != null) {
-                return handler.getLast_botpose();
+                return handler.getBotPoseInFieldInches();
             }
             return null;
         }
@@ -494,13 +494,10 @@ public class LocalizerDecode {
          * Update camera-only position when camera is visible
          */
         private void updateCameraPosition(LLResult cameraResult, LimeLightHandler handler, long currentTimeMs) {
-            Pose3D botPose = extractBotPose(cameraResult, handler);
-            if (botPose != null) {
                 Pose camPose = handler.getBotPoseInFieldInches();
                 cameraX = camPose.getX();
                 cameraY = camPose.getY();
                 cameraHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));
-            }
         }
         
         /**
@@ -663,13 +660,13 @@ public class LocalizerDecode {
          * Initialize odometry position from first valid camera reading
          */
         private void initializeOdometryFromCamera(LLResult cameraResult, LimeLightHandler handler) {
-            Pose3D botPose = extractBotPose(cameraResult, handler);
-            if (botPose != null) {
-                odometryX = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().x);
-                odometryY = CommonDefs.ConvertCameraPosToInches_y(botPose.getPosition().y);
-                odometryHeading = normalizeAngle(botPose.getOrientation().getYaw(AngleUnit.DEGREES));
+            Pose botPose= limeLightHandler.getBotPoseInFieldInches();
+
+                odometryX = botPose.getX();
+                odometryY = botPose.getY();
+                odometryHeading = normalizeAngle(Math.toDegrees(botPose.getHeading()) );
                 odometryInitialized = true;
-            }
+
         }
         
         /**

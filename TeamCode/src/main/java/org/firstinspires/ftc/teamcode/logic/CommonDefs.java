@@ -142,21 +142,22 @@ public class CommonDefs {
     public static final Pose RED_PARK_POSE_FAR = new Pose(72+X_AUTONPARK_FAR, Y_AUTONPARK_FAR, ANGLE_BOT_FAR_AUTONPARK);
     public static final Pose BLUE_PARK_POSE_FAR = new Pose(72-X_AUTONPARK_FAR, Y_AUTONPARK_FAR, 180-ANGLE_BOT_FAR_AUTONPARK);
 
+    public static  final double METRE_INCH_MULTIPLIER   = 39.37;
 
 
-    public static double ConvertCameraPosToInches_x(double x)
-    {
-        //convert metres to inches
-        return (x * 39.37);
-    }
-    public static double ConvertCameraPosToInches_y(double y) {
-        //convert metres to inches
-        return (y * 39.37);
-    }
-    public static double ConvertCameraPosToInches_z(double z) {
-        //convert metres to inches
-        return (z * 39.37);
-    }
+//    public static double ConvertCameraPosToInches_x(double x)
+//    {
+//        //convert metres to inches
+//        return (x * 39.37);
+//    }
+//    public static double ConvertCameraPosToInches_y(double y) {
+//        //convert metres to inches
+//        return (y * 39.37);
+//    }
+//    public static double ConvertCameraPosToInches_z(double z) {
+//        //convert metres to inches
+//        return (z * 39.37);
+//    }
 
     // --- EXAMPLE POSE DEFINITIONS ---
     public static final Pose START_POSE_EXAMPLE = new Pose(119, 129, Math.toRadians(45));

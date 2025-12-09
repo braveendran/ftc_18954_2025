@@ -639,6 +639,10 @@ public class Common_Teleop {
             telemetry.addData("Pos Camera", mLocalizer.getCameraPositionString());
             telemetry.addData("Pos Encoder", mLocalizer.getEncoderPositionString());
         }
+
+        telemetry.addData("forward_position", String.format("%d", lateralEncoder.getCurrentPosition()));
+        telemetry.addData("strafer_position", String.format("%d", ballPusherMotor.getCurrentPosition()));
+
         //telemetry.addData("GATE_POSITION_TESTING_ENABLED",GATE_POSITION_TESTING_ENABLED);
         //telemetry.addData("GATE_POSITION_TESTING ?",GATE_POSITION_TESTING);
         if(imu != null)

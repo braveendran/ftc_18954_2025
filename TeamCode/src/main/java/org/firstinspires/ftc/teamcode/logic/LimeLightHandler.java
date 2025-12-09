@@ -78,11 +78,13 @@ public class LimeLightHandler {
      * @return Pose with x,y in inches and heading in radians (same Pose class used elsewhere)
      */
     public Pose getBotPoseInFieldInches() {
+
+
         Pose3D botPose = this.getLast_botpose();
 
         // Convert limelight meters to inches using existing helpers
-        double limelightX_in = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().y);
-        double limelightY_in = -CommonDefs.ConvertCameraPosToInches_y(botPose.getPosition().x);
+        double limelightX_in = CommonDefs.METRE_INCH_MULTIPLIER * botPose.getPosition().y;
+        double limelightY_in = - CommonDefs.METRE_INCH_MULTIPLIER *botPose.getPosition().x;
 
         // Field center in inches
         final double FIELD_CENTER_IN = 72.0;
