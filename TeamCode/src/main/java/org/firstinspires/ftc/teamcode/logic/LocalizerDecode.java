@@ -150,21 +150,22 @@ public class LocalizerDecode {
 
                 boolean positionMatch = true;
 
-                if(CommonDefs.LOCALIZER_CHECK_DISTANCE_MATCH)
-                {
-                    // The X and Y are public fields
-                    double currentX = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().x);
-                    double currentY = CommonDefs.ConvertCameraPosToInches_y(botPose.getPosition().y);
+                    if(CommonDefs.LOCALIZER_CHECK_DISTANCE_MATCH)
+                    {
+                        // Use LimeLightHandler's transform to get field coordinates in inches
+                        Pose transformed = limeLightHandler.transformBotposeToFieldInches(botPose);
+                        double currentX = transformed.getX();
+                        double currentY = transformed.getY();
 
-                    positionMatch=false;
-                    for (ValidPose validPose : validPoses) {
-                        double distance = Math.sqrt(Math.pow(currentX - validPose.targetX, 2) + Math.pow(currentY - validPose.targetY, 2));
-                        positionMatch = distance <= validPose.positionTolerance;
-                        if(positionMatch) {
-                            break;
+                        positionMatch=false;
+                        for (ValidPose validPose : validPoses) {
+                            double distance = Math.sqrt(Math.pow(currentX - validPose.targetX, 2) + Math.pow(currentY - validPose.targetY, 2));
+                            positionMatch = distance <= validPose.positionTolerance;
+                            if(positionMatch) {
+                                break;
+                            }
                         }
                     }
-                }
 
                 // If both heading and position match, we are aligned
                 if (headingMatch && positionMatch) {
@@ -430,10 +431,11 @@ public class LocalizerDecode {
         private void fuseCameraData(LLResult cameraResult, long currentTimeMs, LimeLightHandler handler) {
             Pose3D botPose = extractBotPose(cameraResult, handler);
             if (botPose != null) {
-                // Convert camera coordinates to field coordinates
-                double camX = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().x);
-                double camY = CommonDefs.ConvertCameraPosToInches_y(botPose.getPosition().y);
-                double camHeading = normalizeAngle(botPose.getOrientation().getYaw(AngleUnit.DEGREES));
+                // Convert camera coordinates to field coordinates using handler transform
+                Pose camPose = handler.transformBotposeToFieldInches(botPose);
+                double camX = camPose.getX();
+                double camY = camPose.getY();
+                double camHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));
                 
                 // Weighted fusion of odometry and camera data for fused position
                 if (cameraAvailable) {
@@ -485,9 +487,10 @@ public class LocalizerDecode {
         private void updateCameraPosition(LLResult cameraResult, LimeLightHandler handler, long currentTimeMs) {
             Pose3D botPose = extractBotPose(cameraResult, handler);
             if (botPose != null) {
-                cameraX = CommonDefs.ConvertCameraPosToInches_x(botPose.getPosition().x);
-                cameraY = CommonDefs.ConvertCameraPosToInches_y(botPose.getPosition().y);
-                cameraHeading = normalizeAngle(botPose.getOrientation().getYaw(AngleUnit.DEGREES));
+                Pose camPose = handler.transformBotposeToFieldInches(botPose);
+                cameraX = camPose.getX();
+                cameraY = camPose.getY();
+                cameraHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));
             }
         }
         
