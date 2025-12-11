@@ -18,7 +18,7 @@ public class TestCode extends OpMode {
 
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
-	DcMotor launcherMotor;
+    DcMotorEx launcherMotor;
     DcMotorEx ballPusherMotor, intakeMotor;
     Servo stopperServo;
 
@@ -125,7 +125,7 @@ public class TestCode extends OpMode {
         leftBack = hardwareMap.dcMotor.get("BackLeft");
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
-        launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
+        launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         //launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
 
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");

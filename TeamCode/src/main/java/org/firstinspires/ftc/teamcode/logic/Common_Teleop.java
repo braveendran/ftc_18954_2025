@@ -27,7 +27,7 @@ public class Common_Teleop {
 
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
-    DcMotor launcherMotor;
+    DcMotorEx launcherMotor;
     DcMotorEx forward_pod; // Forward odometry pod
     DcMotorEx ballPusherMotor, intakeMotor; // ballPusherMotor also serves as strafer pod
 
@@ -83,11 +83,13 @@ public class Common_Teleop {
     private GatePosition currGatePos = GatePosition.GATE_UP_RAMP_FREE;
     private ShooterState shooterState = ShooterState.IDLE;
 
-    public static  final  long INITIAL_SPIN_UP_TIME=900;
+    // Tuned timing constants to reduce overall shooting cycle time
+    public static  final  long INITIAL_SPIN_UP_TIME=500; // reduced from 900
     public static final long  SHOOTING_TURN_TIME_THRESHOLD=1300;
     public static  final long SHOOTING_POSITION_TIME=600;
     public static  final long GATE_OPEN_MIN_TIME=800;
     public static  final long MAX_WAITTIME_ACHIEVING_RPM=500;
+    public static  final long RPM_LOCK_MIN_TIME=250; // how long RPM must be within tolerance
 
 
 
@@ -152,7 +154,7 @@ public class Common_Teleop {
         leftBack = hardwareMap.dcMotor.get("BackLeft");
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
-        launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
+        launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         forward_pod = hardwareMap.get(DcMotorEx.class,"lateralencoder");
         //launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
 
@@ -429,7 +431,7 @@ public class Common_Teleop {
                     }
                 }
 
-                    if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >=600))
+                    if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >= RPM_LOCK_MIN_TIME))
                     {
                         //push the ball in
                         currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
