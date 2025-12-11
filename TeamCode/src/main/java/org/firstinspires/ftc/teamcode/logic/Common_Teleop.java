@@ -27,7 +27,7 @@ public class Common_Teleop {
 
     // ---------------- HARDWARE DECLARATION ----------------
     DcMotor leftFront, rightFront, leftBack, rightBack;
-    DcMotor launcherMotor;
+    DcMotorEx launcherMotor;
     DcMotorEx forward_pod; // Forward odometry pod
     DcMotorEx ballPusherMotor, intakeMotor; // ballPusherMotor also serves as strafer pod
 
@@ -83,11 +83,13 @@ public class Common_Teleop {
     private GatePosition currGatePos = GatePosition.GATE_UP_RAMP_FREE;
     private ShooterState shooterState = ShooterState.IDLE;
 
-    public static  final  long INITIAL_SPIN_UP_TIME=900;
+    // Tuned timing constants to reduce overall shooting cycle time
+    public static  final  long INITIAL_SPIN_UP_TIME=500; // reduced from 900
     public static final long  SHOOTING_TURN_TIME_THRESHOLD=1300;
     public static  final long SHOOTING_POSITION_TIME=600;
     public static  final long GATE_OPEN_MIN_TIME=800;
     public static  final long MAX_WAITTIME_ACHIEVING_RPM=500;
+    public static  final long RPM_LOCK_MIN_TIME=250; // how long RPM must be within tolerance
 
 
 
@@ -152,7 +154,7 @@ public class Common_Teleop {
         leftBack = hardwareMap.dcMotor.get("BackLeft");
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
-        launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
+        launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         forward_pod = hardwareMap.get(DcMotorEx.class,"lateralencoder");
         //launcherBottomMotor = hardwareMap.dcMotor.get("LauncherBottomMotor");
 
@@ -267,9 +269,9 @@ public class Common_Teleop {
 
 
         // ---------------- AUTONOMOUS PARKING TRIGGER ----------------
-        long elapsedTime = System.currentTimeMillis() - systemStartTime;
+        long elapsedTime_in_seconds = (System.currentTimeMillis() - systemStartTime) / 1000;
         if (!autoParkingActive && !autoParkingCompleted && 
-            elapsedTime >= CommonDefs.MIN_TIME_TO_PARK &&
+            elapsedTime_in_seconds >= CommonDefs.MIN_TIME_TO_PARK &&
             this.opMode.gamepad1.right_trigger > 0.8 && this.opMode.gamepad1.left_trigger > 0.8) {
             
             // Trigger autonomous parking
@@ -319,6 +321,7 @@ public class Common_Teleop {
         boolean shortPowerShot = this.opMode.gamepad2.y || this.opMode.gamepad2.right_bumper || (this.opMode.gamepad2.left_trigger>0.5);
         boolean turn_before_shoot=false;
         boolean dynamicRPM_distancebased=false;
+        double distanceToTarget=0.0;
         double turn_angle_shoot_correction=0;
         if(
             (
@@ -342,6 +345,7 @@ public class Common_Teleop {
             CancelShootingAfterCurrentSequence=true;
         }
 
+        Target_RPM_Shooting=0;
         switch (shooterState) {
             case IDLE:
                 if (fullPowerShot || shortPowerShot) {
@@ -411,17 +415,23 @@ public class Common_Teleop {
                 if (dynamicRPM_distancebased && mLocalizer != null) {
                     // Use dynamic RPM based on distance to target
                     Pose fusedPos = mLocalizer.getCurrentFusedPosition();
-                    double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
-                        mLocalizer.getDistanceToRedBasket() :
-                        mLocalizer.getDistanceToBlueBasket();
+                    // double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
+                    //     mLocalizer.getDistanceToRedBasket() :
+                    //     mLocalizer.getDistanceToBlueBasket();
+                    distanceToTarget= mLocalizer.getCameraDistanceToTarget();                    
                     Target_RPM_Shooting = (long)mDistVelocityProjection.getVelocity(distanceToTarget);
-                } else if (shortRangeMode) {
-                    Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
-                } else {
-                    Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
+                    
+                } 
+                if(Target_RPM_Shooting == 0)
+                {
+                    if (shortRangeMode) {
+                        Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
+                    } else {
+                        Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
+                    }
                 }
 
-                    if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >=600))
+                    if ((Math.abs(getLauncherRpm() - Target_RPM_Shooting) <= (LAUNCHER_RPM_TOLERANCE))  && ((System.currentTimeMillis()-stateStartTime) >= RPM_LOCK_MIN_TIME))
                     {
                         //push the ball in
                         currGatePos = GatePosition.GATE_DOWN_PUSHED_BALL_IN;
@@ -568,14 +578,17 @@ public class Common_Teleop {
             if (dynamicRPM_distancebased && mLocalizer != null) {
                 // Use dynamic RPM based on distance to target
                 Pose fusedPos = mLocalizer.getCurrentFusedPosition();
-                double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
-                    mLocalizer.getDistanceToRedBasket() :
-                    mLocalizer.getDistanceToBlueBasket();
+                distanceToTarget = mLocalizer.getCameraDistanceToTarget();
                 Target_RPM_Shooting = (long)mDistVelocityProjection.getVelocity(distanceToTarget);
-            } else if (shortRangeMode) {
-                Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
-            } else {
-                Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
+            } 
+            
+            if(Target_RPM_Shooting == 0)
+            {
+                if (shortRangeMode) {
+                    Target_RPM_Shooting = LAUNCHER_SHORTTANGE_RPM;
+                } else {
+                    Target_RPM_Shooting = LAUNCHER_LONGRANGE_RPM;
+                }
             }
 
             setLauncherRPM(Target_RPM_Shooting);
@@ -655,6 +668,9 @@ public class Common_Teleop {
             telemetry.addData("IMU Heading", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         }
 
+        telemetry.addData("Target Distance", String.format("%.1f in", distanceToTarget));
+        telemetry.addData("Target RPM",Target_RPM_Shooting);
+
         if(ENABLE_LIMEIGHT_CAMERA){
             if(limelight_result != null && limelight_result.isValid())  {
                 Pose3D pose=limelight_result.getBotpose();
@@ -662,15 +678,8 @@ public class Common_Teleop {
                 telemetry.addData("heading corr", String.format("%.3f", mLocalizer.getHeadingCorrectionDeg()));
                 telemetry.addData("Raw Cam X:Y:H->", String.format("%.3f ,%.3f ,%.3f", pose.getPosition().x,pose.getPosition().y,pose.getOrientation().getYaw(AngleUnit.DEGREES)));
                 telemetry.addData("turn_relative_currentYaw", turn_relative_currentYaw);
-                telemetry.addData("turn_relative_targetYaw", turn_relative_targetYaw);
+                telemetry.addData("turn_relative_targetYaw", turn_relative_targetYaw);             
                 
-                if (dynamicRPM_distancebased && mLocalizer != null) {
-                    double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
-                        mLocalizer.getDistanceToRedBasket() :
-                        mLocalizer.getDistanceToBlueBasket();
-                    telemetry.addData("Target Distance", String.format("%.1f in", distanceToTarget));
-                    telemetry.addData("Dynamic RPM", (long)mDistVelocityProjection.getVelocity(distanceToTarget));
-                }
 
             }
         }

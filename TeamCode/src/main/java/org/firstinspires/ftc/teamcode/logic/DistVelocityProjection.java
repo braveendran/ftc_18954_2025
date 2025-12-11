@@ -8,9 +8,13 @@ public class DistVelocityProjection {
     public DistVelocityProjection() {
         velocityMap = new TreeMap<>();
         // These are just placeholders and should be tuned
-        velocityMap.put(10.0, 1000.0); // at 10 units of distance, velocity is 1000 RPM
-        velocityMap.put(20.0, 1500.0); // at 20 units of distance, velocity is 1500 RPM
-        velocityMap.put(30.0, 2000.0); // at 30 units of distance, velocity is 2000 RPM
+        velocityMap.put(84.85, 2800.0); 
+        velocityMap.put(84.85, 2800.0);
+        velocityMap.put(101, 2900.0);
+        velocityMap.put(130.99, 3200.0); // at 20 units of distance, velocity is 1500 RPM 
+        velocityMap.put(140.99, 3450.0); // at 20 units of distance, velocity is 1500 RPM
+        velocityMap.put(150.99, 3500.0); // at 20 units of distance, velocity is 1500 RPM 
+        velocityMap.put(160.99, 3600.0); // at 20 units of distance, velocity is 1500 RPM
     }
 
     /**

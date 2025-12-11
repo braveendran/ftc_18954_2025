@@ -18,6 +18,7 @@ public class LimeLightHandler {
     private Pose3D last_botpose;
     private LLResult pose_result;
     private long last_updatedtime;
+    private double last_distance_target;
 
 
 
@@ -110,6 +111,22 @@ public class LimeLightHandler {
 
         // Return Pose with heading in radians (consistent with existing Pose usage)
         return new Pose(fieldX, fieldY, Math.toRadians(fieldYawDeg));
+    }
+
+    public double GetDistanceToTarget() {
+        Pose3D botPose = getBotPoseInFieldInches();
+
+        double x = fieldPose.getX();
+        double y = fieldPose.getY();
+        // choose target coordinate by alliance
+        double targetX = (alliance == CommonDefs.Alliance.RED) ? 144.0 : 0.0;
+        double targetY = 144.0;
+        double dx = targetX - x;
+        double dy = targetY - y;
+        double distanceInches = Math.hypot(dx, dy);
+
+        last_distance_target = distanceInches;
+        return distanceInches;
     }
 
     public Pose3D getLast_botpose() {

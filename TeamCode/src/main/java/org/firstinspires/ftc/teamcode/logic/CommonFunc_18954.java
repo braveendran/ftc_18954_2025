@@ -25,7 +25,8 @@ public class CommonFunc_18954 {
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
 
-    DcMotor leftFront, rightFront, leftBack, rightBack,launcherMotor;
+    DcMotor leftFront, rightFront, leftBack, rightBack;
+    DcMotorEx launcherMotor;
     DcMotorEx ballPusherMotor, intakeMotor, forward_pod;
     Servo stopperServo;
 
@@ -94,7 +95,7 @@ public class CommonFunc_18954 {
         leftBack = hardwareMap.dcMotor.get("BackLeft");
         rightBack = hardwareMap.dcMotor.get("BackRight");
         ballPusherMotor = hardwareMap.get(DcMotorEx.class, "ballPusherMotor");
-        launcherMotor = hardwareMap.dcMotor.get("launcherMotor");
+        launcherMotor = hardwareMap.get(DcMotorEx.class, "launcherMotor");
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         stopperServo = hardwareMap.get(Servo.class, "stopperServo");
         forward_pod = hardwareMap.get(DcMotorEx.class,"lateralencoder");
@@ -186,7 +187,7 @@ public class CommonFunc_18954 {
         }
         intakeMotor.setPower(0);
         stopperServo.setPosition(Common_Teleop.GATE_DOWN_PUSHED_BALL_IN_SERVOPOS);
-        opMode.sleep(400);
+        opMode.sleep(250);
 
 
 
@@ -200,22 +201,20 @@ public class CommonFunc_18954 {
             ballPusherMotor.setPower(CommonDefs.BallPusher_IntakePower);
             // Open the stopper to feed the Power Core
             shooter_start_time = System.currentTimeMillis();
-            while (opMode.opModeIsActive() && ( Math.abs (getLauncherRpm() - LauncherRPM) >= Common_Teleop.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Common_Teleop.MAX_WAITTIME_ACHIEVING_RPM))
-            {
+            while (opMode.opModeIsActive() && ( Math.abs (getLauncherRpm() - LauncherRPM) >= Common_Teleop.LAUNCHER_RPM_TOLERANCE) &&  (( System.currentTimeMillis() - shooter_start_time )<  Common_Teleop.MAX_WAITTIME_ACHIEVING_RPM)) {
                 callPeriodicUpdate();
                 opMode.sleep(1);
             }
 
-            opMode.sleep(300);
+            opMode.sleep(150);
             callPeriodicUpdate();
 
             stopperServo.setPosition(Common_Teleop.GATE_UP_RAMP_FREE_SERVOPOS_AUTON);
-            if(far == true)
-            {
-                opMode.sleep(1100);
-            }
-            else {
-                opMode.sleep(550); // Wait 0.5 seconds for the core to pass
+            // Use Common_Teleop.SHOOTING_POSITION_TIME to decide timing; allow shorter windows for near shots
+            if (far) {
+                opMode.sleep((long)(Common_Teleop.SHOOTING_POSITION_TIME * 2));
+            } else {
+                opMode.sleep(Common_Teleop.SHOOTING_POSITION_TIME);
             }
             callPeriodicUpdate();
 
