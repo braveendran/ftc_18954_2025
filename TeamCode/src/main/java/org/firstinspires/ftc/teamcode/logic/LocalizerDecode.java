@@ -335,6 +335,8 @@ public class LocalizerDecode {
         private double cameraWeight = 0.3; // How much to trust camera vs odometry
         private long lastCameraUpdateTime = 0;
         private static final long CAMERA_TIMEOUT_MS = 1000; // Consider camera stale after 1 second
+
+        private double CameraDistanceToTarget = 0.0;
         
         /**
          * Constructor initializes the localization system
@@ -379,6 +381,7 @@ public class LocalizerDecode {
             if (!odometryInitialized && cameraResult != null && cameraResult.isValid() && 
                 cameraResult.getTa() > CommonDefs.LIMELIGHT_HEADING_TARGETAREA_THRESHOLD) {
                 initializeOdometryFromCamera(cameraResult, handler);
+                this.CameraDistanceToTarget = handler.GetDistanceToTarget();
             }
             
             // Update odometry-only position (if initialized)
@@ -590,6 +593,12 @@ public class LocalizerDecode {
          */
         public double getCurrentHeading() {
             return fusedHeading;
+        }
+
+        
+        public double getCameraDistanceToTarget()
+        {
+            return this.CameraDistanceToTarget;
         }
         
         /**

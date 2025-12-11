@@ -34,8 +34,8 @@ public class CommonDefs {
     // Distance threshold for "too close" warning (inches)
     public final static double TARGET_TOO_CLOSE_THRESHOLD_INCHES = 24.0;
     
-    // Minimum time before autonomous parking is allowed (milliseconds)
-    public final static long MIN_TIME_TO_PARK = 90000; // 90 seconds = 1.5 minutes
+    // Minimum time before autonomous parking is allowed (seconds)
+    public final static long MIN_TIME_TO_PARK = 110; // 90 seconds = 1.5 minutes
 
     public final static boolean LOCALIZER_CHECK_DISTANCE_MATCH=false;
     
