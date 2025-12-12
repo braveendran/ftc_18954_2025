@@ -95,7 +95,7 @@ public class LocalizerDecode {
         }
 
         // Initialize position localization system
-        this.positionLocalizer = new PositionLocalization();
+        this.positionLocalizer = new PositionLocalization(72,72,0,this.imu);
         
         // Initialize LED to a neutral/off state (gray)
         this.driverIndicationLED.off();
@@ -111,7 +111,7 @@ public class LocalizerDecode {
         LLResult resultPose = limeLightHandler.update(time_ms);
         
         // Read encoder ticks for position localization
-        long forwardTicks = lateralEncoder.getCurrentPosition();
+        long forwardTicks = -lateralEncoder.getCurrentPosition();
         long straferTicks = ballPusherMotor.getCurrentPosition();
         
         // Update position localization
@@ -315,7 +315,7 @@ public class LocalizerDecode {
         private static final double WHEEL_DIAMETER_MM = 32.0;
         private static final double WHEEL_CIRCUMFERENCE_INCHES = (WHEEL_DIAMETER_MM / 25.4) * Math.PI;
         private static final double TICKS_PER_REVOLUTION = 8192.0; // Typical for high-resolution encoders
-        private static final double INCHES_PER_TICK = WHEEL_CIRCUMFERENCE_INCHES / TICKS_PER_REVOLUTION;
+        private static final double INCHES_PER_TICK =0.001988;
         
         // Fused position (combination of camera and odometry)
         private double fusedX = 72.0; // Start at field center
@@ -377,7 +377,7 @@ public class LocalizerDecode {
             this.odometryY = 72.0;
             this.odometryHeading = 0.0;
             this.odometryInitialized = false;
-            this.imuHeading=0.0;
+
         }
 
 
@@ -385,9 +385,9 @@ public class LocalizerDecode {
         /**
          * Default constructor - starts at field center
          */
-        public PositionLocalization() {
-            this(72.0, 72.0, 0.0);
-        }
+//        public PositionLocalization() {
+//            this(72.0, 72.0, 0.0);
+//        }
         
         /**
          * Periodic update function to recalculate robot position
@@ -443,7 +443,7 @@ public class LocalizerDecode {
             
             // Convert to field coordinates considering robot orientation (use IMU heading for odometry)
             // Use imuHeading if available, else fall back to odometryHeading
-            odometryHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            odometryHeading = getImuAngle();
             double headingRad = Math.toRadians(odometryHeading);
             double cosHeading = Math.cos(headingRad);
             double sinHeading = Math.sin(headingRad);
