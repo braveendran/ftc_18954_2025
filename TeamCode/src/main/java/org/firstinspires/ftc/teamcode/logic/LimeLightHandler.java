@@ -124,8 +124,8 @@ public class LimeLightHandler {
         // choose target coordinate by alliance
         double targetX = (alliance == CommonDefs.Alliance.RED) ? 144.0 : 0.0;
         double targetY = 144.0;
-        double dx = targetX - x;
-        double dy = targetY - y;
+        double dx = Math.abs(targetX - x);
+        double dy = Math.abs(targetY - y);
         double distanceInches = Math.hypot(dx, dy);
 
         last_distance_target = distanceInches;

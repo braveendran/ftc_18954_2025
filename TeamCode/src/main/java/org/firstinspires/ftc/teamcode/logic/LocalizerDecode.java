@@ -387,7 +387,7 @@ public class LocalizerDecode {
             if (!odometryInitialized && cameraResult != null && cameraResult.isValid() && 
                 cameraResult.getTa() > CommonDefs.LIMELIGHT_HEADING_TARGETAREA_THRESHOLD) {
                 initializeOdometryFromCamera(cameraResult, handler);
-                this.CameraDistanceToTarget = handler.GetDistanceToTarget();
+
             }
             
             // Update odometry-only position (if initialized)
@@ -397,6 +397,7 @@ public class LocalizerDecode {
             
             // Update camera-only position and fused position
             if (cameraResult != null && cameraResult.isValid()) {
+                this.CameraDistanceToTarget = handler.GetDistanceToTarget();
                 updateCameraPosition(cameraResult, handler, currentTimeMs);
                 fuseCameraData(cameraResult, currentTimeMs, handler);
             } else {
