@@ -883,7 +883,7 @@ public class Common_Teleop {
      * Execute the parking maneuver from current position to target parking area
      */
     private void executeParkingManeuver(double currentX, double currentY, double targetX, double targetY) {
-        final double PARKING_SPEED = 0.4; // Slower speed for precise parking
+        final double PARKING_SPEED = 1.0; // Slower speed for precise parking
         final double POSITION_TOLERANCE = 6.0; // inches tolerance for parking completion
         final long PARKING_TIMEOUT = 15000; // 15 second timeout for parking
         
@@ -892,6 +892,9 @@ public class Common_Teleop {
         while (autoParkingActive && !autoParkingCompleted && 
                (System.currentTimeMillis() - parkingStartTime) < PARKING_TIMEOUT
         ) {
+
+            //update position
+            mLocalizer.update(System.currentTimeMillis());
                
             // Get current position from localizer
             Pose currentPos = (mLocalizer != null) ? mLocalizer.getCurrentFusedPosition() : new Pose(currentX, currentY, 0);
@@ -936,7 +939,9 @@ public class Common_Teleop {
             telemetry.addData("Parking", "ACTIVE");
             telemetry.addData("Distance to Park", String.format("%.1f in", distanceToTarget));
             telemetry.addData("Target", String.format("(%.1f, %.1f)", targetX, targetY));
+            telemetry.addData("Current", String.format("(%.1f, %.1f)", currentX, currentY));
             telemetry.update();
+
             
             // Small delay to prevent excessive CPU usage
             try {
