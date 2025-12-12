@@ -112,7 +112,7 @@ public class LocalizerDecode {
         
         // Read encoder ticks for position localization
         long forwardTicks = -lateralEncoder.getCurrentPosition();
-        long straferTicks = ballPusherMotor.getCurrentPosition();
+        long straferTicks = -ballPusherMotor.getCurrentPosition();
         
         // Update position localization
         positionLocalizer.periodicUpdate(forwardTicks, straferTicks, resultPose, limeLightHandler, time_ms);
@@ -455,6 +455,7 @@ public class LocalizerDecode {
             // Update odometry-only position
             odometryX += deltaX;
             odometryY += deltaY;
+
             
             // Update encoder readings
             previousForwardTicks = forwardTicks;

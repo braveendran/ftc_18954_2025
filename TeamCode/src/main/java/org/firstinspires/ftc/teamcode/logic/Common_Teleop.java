@@ -897,7 +897,7 @@ public class Common_Teleop {
             mLocalizer.update(System.currentTimeMillis());
                
             // Get current position from localizer
-            Pose currentPos = (mLocalizer != null) ? mLocalizer.getCurrentFusedPosition() : new Pose(currentX, currentY, 0);
+            Pose currentPos =  mLocalizer.getCurrentOdometryPosition();
             
             // Calculate distance to target
             double deltaX = targetX - currentPos.getX();
@@ -933,13 +933,14 @@ public class Common_Teleop {
             double robotRelativeY = moveX * Math.sin(-robotHeading) + moveY * Math.cos(-robotHeading);
             
             // Apply movement using mecanum drive
-            DriveControl_PowerBased(robotRelativeY * adjustedSpeed, robotRelativeX * adjustedSpeed, 0);
+            DriveControl_PowerBased(robotRelativeX * adjustedSpeed, -robotRelativeY * adjustedSpeed, robotHeading);
             
             // Update telemetry
             telemetry.addData("Parking", "ACTIVE");
             telemetry.addData("Distance to Park", String.format("%.1f in", distanceToTarget));
             telemetry.addData("Target", String.format("(%.1f, %.1f)", targetX, targetY));
-            telemetry.addData("Current", String.format("(%.1f, %.1f)", currentX, currentY));
+            telemetry.addData("Current", String.format("(%.1f, %.1f)", currentPos.getX(), currentPos.getY()));
+            telemetry.addData("Mecanum" , String.format("%.1f %,1f in", robotRelativeY * adjustedSpeed, robotRelativeX * adjustedSpeed));
             telemetry.update();
 
             

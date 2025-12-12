@@ -41,16 +41,16 @@ public class CommonDefs {
     
     // End game parking bounding boxes (x_min, y_min, x_max, y_max in inches)
     // Red alliance end game parking area
-    public static final double RED_ENDGAME_PARK_X_MIN = 108.0;
-    public static final double RED_ENDGAME_PARK_Y_MIN = 108.0;  
-    public static final double RED_ENDGAME_PARK_X_MAX = 144.0;
-    public static final double RED_ENDGAME_PARK_Y_MAX = 144.0;
+    public static final double RED_ENDGAME_PARK_X_MIN = 28;
+    public static final double RED_ENDGAME_PARK_Y_MIN = 24;
+    public static final double RED_ENDGAME_PARK_X_MAX = 48;
+    public static final double RED_ENDGAME_PARK_Y_MAX = 44;
     
     // Blue alliance end game parking area
-    public static final double BLUE_ENDGAME_PARK_X_MIN = 0.0;
-    public static final double BLUE_ENDGAME_PARK_Y_MIN = 108.0;
-    public static final double BLUE_ENDGAME_PARK_X_MAX = 36.0;
-    public static final double BLUE_ENDGAME_PARK_Y_MAX = 144.0;
+    public static final double BLUE_ENDGAME_PARK_X_MIN = 96;
+    public static final double BLUE_ENDGAME_PARK_Y_MIN = 24;
+    public static final double BLUE_ENDGAME_PARK_X_MAX = 96.0+20;
+    public static final double BLUE_ENDGAME_PARK_Y_MAX = 44;
 
     // --- ROBOT PHYSICAL CONSTANTS ---
     // Distance between left and right wheel centers (track width)
