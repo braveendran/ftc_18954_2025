@@ -146,6 +146,8 @@ public class Common_Teleop {
     private double turn_relative_targetYaw;
     private double turn_relative_currentYaw;
 
+    boolean dynamicRPM_distancebased=false;
+
     private void init_private()
     {
         // Private init tasks can be added here if needed
@@ -319,9 +321,9 @@ public class Common_Teleop {
 
         // ---------------- SHOOTER SEQUENCE ----------------
         boolean fullPowerShot = this.opMode.gamepad2.a || this.opMode.gamepad2.left_bumper || (this.opMode.gamepad2.left_trigger>0.5);
-        boolean shortPowerShot = this.opMode.gamepad2.y || this.opMode.gamepad2.right_bumper || (this.opMode.gamepad2.left_trigger>0.5);
+        boolean shortPowerShot = this.opMode.gamepad2.y || this.opMode.gamepad2.right_bumper || (this.opMode.gamepad2.right_trigger>0.5);
         boolean turn_before_shoot=false;
-        boolean dynamicRPM_distancebased=false;
+
         double basket_distance=0.0;
         double turn_angle_shoot_correction=0;
         if(limelight_result != null && limelight_result.isValid()) {
@@ -334,19 +336,24 @@ public class Common_Teleop {
         if(
             (
                 ( this.opMode.gamepad2.left_bumper || this.opMode.gamepad2.right_bumper )  ||
-                ((this.opMode.gamepad2.left_trigger>0.5) ||  (this.opMode.gamepad2.left_trigger>0.5) ) 
+                ((this.opMode.gamepad2.left_trigger>0.5) ||  (this.opMode.gamepad2.right_trigger>0.5) )
             )
             &&  (limelight_result != null && limelight_result.isValid()) 
         )
         {
             turn_before_shoot=true;
-            turn_angle_shoot_correction=mLocalizer.getHeadingCorrectionDeg();            
+            turn_angle_shoot_correction=mLocalizer.getHeadingCorrectionDeg();
+            if( ((this.opMode.gamepad2.left_trigger>0.5) ||  (this.opMode.gamepad2.right_trigger>0.5) ) )
+            {
+                dynamicRPM_distancebased=true;
+            }
+            else
+            {
+                dynamicRPM_distancebased=false;
+            }
         }
 
-        if( ((this.opMode.gamepad2.left_trigger>0.5) ||  (this.opMode.gamepad2.left_trigger>0.5) ) )
-        {
-            dynamicRPM_distancebased=true;
-        }        
+
 
         if (this.opMode.gamepad2.dpad_down)
         {
@@ -422,7 +429,7 @@ public class Common_Teleop {
             {
                 if (dynamicRPM_distancebased && mLocalizer != null) {
                     // Use dynamic RPM based on distance to target
-                    Pose fusedPos = mLocalizer.getCurrentFusedPosition();
+                    //Pose fusedPos = mLocalizer.getCurrentFusedPosition();
                     // double distanceToTarget = (mAlliance == CommonDefs.Alliance.RED) ?
                     //     mLocalizer.getDistanceToRedBasket() :
                     //     mLocalizer.getDistanceToBlueBasket();
@@ -473,6 +480,7 @@ public class Common_Teleop {
                             launcherOn = false;
                             currGatePos =  GatePosition.GATE_UP_RAMP_FREE;
                             shortRangeMode = false;
+                            dynamicRPM_distancebased=false;
                         }
                         else
                         {
@@ -675,7 +683,7 @@ public class Common_Teleop {
         {
             telemetry.addData("IMU Heading", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
         }
-
+        telemetry.addData("dynamicRPM_distancebased %s",dynamicRPM_distancebased  ? "Dynamic Dist Based" : "Static");
         telemetry.addData("Target Distance", String.format("%.1f in", basket_distance));
 
         telemetry.addData("Target_RPM_DistanceBased_Debug", String.format("%d in", this.Target_RPM_DistanceBased_Debug));
