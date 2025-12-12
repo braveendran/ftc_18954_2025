@@ -214,7 +214,7 @@ public class Common_Teleop {
         if(ENABLE_LIMEIGHT_CAMERA)
         {
             mLocalizer = new LocalizerDecode(mAlliance, mLimeLightHandler, mDriverIndicationLED, 
-                                           forward_pod, ballPusherMotor);
+                                           forward_pod, ballPusherMotor, imu);
         }
         else
         {

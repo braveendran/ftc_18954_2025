@@ -8,6 +8,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ public class LocalizerDecode {
     
     // Position localization instance
     private final PositionLocalization positionLocalizer;
+    private final IMU imu;
 
     // Use a list of valid poses instead of a single target
     private final List<ValidPose> validPoses;
@@ -65,12 +67,13 @@ public class LocalizerDecode {
      * @param starferpod The ball pusher motor (strafer pod).
      */
     public LocalizerDecode(Alliance alliance, LimeLightHandler limeLightHandler, DriverIndicationLED driverIndicationLED,
-                           DcMotorEx forwardpod, DcMotorEx starferpod) {
+                           DcMotorEx forwardpod, DcMotorEx starferpod, IMU imu) {
         this.alliance = alliance;
         this.limeLightHandler = limeLightHandler;
         this.driverIndicationLED = driverIndicationLED;
         this.lateralEncoder = forwardpod;
         this.ballPusherMotor = starferpod;
+        this.imu = imu;
         this.validPoses = new ArrayList<>();
 
         // Populate the list of valid poses based on the alliance.
@@ -323,6 +326,7 @@ public class LocalizerDecode {
         private double cameraX = 72.0;
         private double cameraY = 72.0;
         private double cameraHeading = 0.0;
+
         
         // Odometry-only position
         private double odometryX = 72.0;
@@ -339,6 +343,15 @@ public class LocalizerDecode {
         private double cameraWeight = 0.3; // How much to trust camera vs odometry
         private long lastCameraUpdateTime = 0;
         private static final long CAMERA_TIMEOUT_MS = 1000; // Consider camera stale after 1 second
+        private IMU imu;
+        private double imuHeading_Sync   = 0.0; // IMU-derived heading in degrees
+        private double cameraHeading_Sync = 0.0; // Camera-derived heading in degrees
+
+        private double getImuAngle()
+        {
+            double imu_val=imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+            return normalizeAngle(imu_val + (cameraHeading_Sync - imuHeading_Sync));
+        }
 
         private double CameraDistanceToTarget = 0.0;
         
@@ -348,7 +361,8 @@ public class LocalizerDecode {
          * @param startY Starting Y position in inches  
          * @param startHeading Starting heading in degrees
          */
-        public PositionLocalization(double startX, double startY, double startHeading) {
+        public PositionLocalization(double startX, double startY, double startHeading, IMU imu) {
+            this.imu = imu;
             double clampedX = Math.max(0, Math.min(FIELD_SIZE_INCHES, startX));
             double clampedY = Math.max(0, Math.min(FIELD_SIZE_INCHES, startY));
             double normalizedHeading = normalizeAngle(startHeading);
@@ -363,6 +377,7 @@ public class LocalizerDecode {
             this.odometryY = 72.0;
             this.odometryHeading = 0.0;
             this.odometryInitialized = false;
+            this.imuHeading=0.0;
         }
 
 
@@ -386,7 +401,7 @@ public class LocalizerDecode {
             // Check for odometry initialization from camera
             if (!odometryInitialized && cameraResult != null && cameraResult.isValid() && 
                 cameraResult.getTa() > CommonDefs.LIMELIGHT_HEADING_TARGETAREA_THRESHOLD) {
-                initializeOdometryFromCamera(cameraResult, handler);
+                initializeOdometryFromCamera(cameraResult, handler,forwardTicks,straferTicks);
 
             }
             
@@ -426,7 +441,9 @@ public class LocalizerDecode {
             double deltaForwardInches = deltaForwardTicks * INCHES_PER_TICK;
             double deltaStraferInches = deltaStraferTicks * INCHES_PER_TICK;
             
-            // Convert to field coordinates considering robot orientation (use odometry heading)
+            // Convert to field coordinates considering robot orientation (use IMU heading for odometry)
+            // Use imuHeading if available, else fall back to odometryHeading
+            odometryHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
             double headingRad = Math.toRadians(odometryHeading);
             double cosHeading = Math.cos(headingRad);
             double sinHeading = Math.sin(headingRad);
@@ -507,7 +524,8 @@ public class LocalizerDecode {
                 Pose camPose = handler.getBotPoseInFieldInches();
                 cameraX = camPose.getX();
                 cameraY = camPose.getY();
-                cameraHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));
+            cameraHeading = normalizeAngle(Math.toDegrees(camPose.getHeading()));
+            // Keep imuHeading in sync if imu is available? We set imuHeading during initialization only
         }
         
         /**
@@ -675,14 +693,19 @@ public class LocalizerDecode {
         /**
          * Initialize odometry position from first valid camera reading
          */
-        private void initializeOdometryFromCamera(LLResult cameraResult, LimeLightHandler handler) {
+        private void initializeOdometryFromCamera(LLResult cameraResult, LimeLightHandler handler,long forwardTicks, long straferTicks) {
             Pose botPose= limeLightHandler.getBotPoseInFieldInches();
 
                 odometryX = botPose.getX();
                 odometryY = botPose.getY();
-                odometryHeading = normalizeAngle(Math.toDegrees(botPose.getHeading()) );
+                double cameraHeadingDeg = normalizeAngle(Math.toDegrees(botPose.getHeading()));
+                odometryHeading = cameraHeadingDeg;
+                // If IMU reference available, set the IMU heading to camera heading (align IMU reference)
+                this.imuHeading_Sync = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+                this.cameraHeading_Sync = cameraHeadingDeg;
                 odometryInitialized = true;
-
+                previousForwardTicks= forwardTicks;
+                previousStraferTicks= straferTicks;
         }
         
         /**

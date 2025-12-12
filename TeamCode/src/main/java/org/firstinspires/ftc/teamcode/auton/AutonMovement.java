@@ -56,7 +56,7 @@ public class AutonMovement {
         // Note: IMU and other hardware will be initialized when initializeHardware() is called in the sequence methods
         imu = opMode.hardwareMap.get(IMU.class, "imu"); // Get IMU directly from hardware map
         mLimeLightHandler = new LimeLightHandler(imu, opMode.hardwareMap, alliance);
-        mLocalizer = new LocalizerDecode(alliance, mLimeLightHandler, mDriverIndicationLED , this.objCommonFunc.Get_Forwardpod(), this.objCommonFunc.Get_StraferPod() );
+        mLocalizer = new LocalizerDecode(alliance, mLimeLightHandler, mDriverIndicationLED , this.objCommonFunc.Get_Forwardpod(), this.objCommonFunc.Get_StraferPod(), this.objCommonFunc.getIMU() );
     }
     
     public void runAutonomousSequence() {
