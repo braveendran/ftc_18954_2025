@@ -220,6 +220,10 @@ public class LocalizerDecode {
         return resultPose;
     }
 
+    public double getCameraDistanceToTarget(){
+        return this.positionLocalizer.getCameraDistanceToTarget();
+    }
+
     public double getHeadingCorrectionDeg() {
         return HeadingCorrectionDeg;
     }
@@ -360,6 +364,8 @@ public class LocalizerDecode {
             this.odometryHeading = 0.0;
             this.odometryInitialized = false;
         }
+
+
         
         /**
          * Default constructor - starts at field center
@@ -595,7 +601,7 @@ public class LocalizerDecode {
             return fusedHeading;
         }
 
-        
+
         public double getCameraDistanceToTarget()
         {
             return this.CameraDistanceToTarget;

@@ -20,10 +20,13 @@ public class LimeLightHandler {
     private long last_updatedtime;
     private double last_distance_target;
 
+    private CommonDefs.Alliance alliance;
+
 
 
     public LimeLightHandler(IMU imu, HardwareMap hardwareMap,CommonDefs.Alliance alliance) {
 
+        this.alliance=alliance;
         this.imu = imu;
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
@@ -114,10 +117,10 @@ public class LimeLightHandler {
     }
 
     public double GetDistanceToTarget() {
-        Pose3D botPose = getBotPoseInFieldInches();
+        Pose botPose = getBotPoseInFieldInches();
 
-        double x = fieldPose.getX();
-        double y = fieldPose.getY();
+        double x = botPose.getX();
+        double y = botPose.getY();
         // choose target coordinate by alliance
         double targetX = (alliance == CommonDefs.Alliance.RED) ? 144.0 : 0.0;
         double targetY = 144.0;

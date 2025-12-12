@@ -641,7 +641,7 @@ public class Common_Teleop {
         telemetry.addData("RPM Modifiable ?",RPM_ADJUSTMENTS_ALLOWED);
         
         // System timer and parking status
-        elapsedTime = System.currentTimeMillis() - systemStartTime;
+        long elapsedTime = System.currentTimeMillis() - systemStartTime;
         telemetry.addData("System Time", String.format("%.1fs", elapsedTime / 1000.0));
         
         if (elapsedTime >= CommonDefs.MIN_TIME_TO_PARK) {

@@ -10,7 +10,7 @@ public class DistVelocityProjection {
         // These are just placeholders and should be tuned
         velocityMap.put(84.85, 2800.0); 
         velocityMap.put(84.85, 2800.0);
-        velocityMap.put(101, 2900.0);
+        velocityMap.put(101.0, 2900.0);
         velocityMap.put(130.99, 3200.0); // at 20 units of distance, velocity is 1500 RPM 
         velocityMap.put(140.99, 3450.0); // at 20 units of distance, velocity is 1500 RPM
         velocityMap.put(150.99, 3500.0); // at 20 units of distance, velocity is 1500 RPM 
