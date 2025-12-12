@@ -20,14 +20,18 @@ public class DriverIndicationLED {
     public static final double PATTERN_GRAY = 0.9;
     
     // Blinking patterns
-    public static final double PATTERN_BLINK_RED = 0.15;
-    public static final double PATTERN_BLINK_GREEN = 0.35;
-    public static final double PATTERN_BLINK_BLUE = 0.25;
+    public static final double PATTERN_BLINK_RED = 0.0;
+    public static final double PATTERN_BLINK_GREEN = 0.0;
+    public static final double PATTERN_BLINK_BLUE = 0.0;
     
     // Blinking state
     private boolean blinkingMode = false;
     private double currentSolidPattern = PATTERN_GRAY;
     private double currentBlinkPattern = PATTERN_GRAY;
+
+    private boolean blinking_state = true;
+
+    private long blink_changed_time=0;
 
     /**
      * Initializes the Blinkin LED driver.
@@ -95,13 +99,28 @@ public class DriverIndicationLED {
     /**
      * Update the LED pattern based on current color and blinking mode
      */
-    private void updateLED() {
+    public void updateLED() {
         if (blinkingMode) {
-            blinkin.setPosition(currentBlinkPattern);
+            if(System.currentTimeMillis() - blink_changed_time > 150)
+            {
+                blinking_state = !blinking_state;
+                blink_changed_time = System.currentTimeMillis();
+            }
+            if(blinking_state)
+            {
+                blinkin.setPosition(currentBlinkPattern);
+            }
+            else
+            {
+                blinkin.setPosition(currentSolidPattern);
+            }
+
         } else {
             blinkin.setPosition(currentSolidPattern);
         }
     }
+
+
 
     /**
      * Allows setting a custom pattern by providing the raw PWM value.

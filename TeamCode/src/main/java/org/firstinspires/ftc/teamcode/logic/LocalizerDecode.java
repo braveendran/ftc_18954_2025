@@ -220,6 +220,8 @@ public class LocalizerDecode {
             driverIndicationLED.setBlue();
         }
 
+        driverIndicationLED.updateLED();
+
         return resultPose;
     }
 

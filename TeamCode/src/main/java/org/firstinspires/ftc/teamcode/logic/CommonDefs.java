@@ -32,7 +32,7 @@ public class CommonDefs {
     public final static double LIMELIGHT_HEADING_TARGETAREA_THRESHOLD= 0.5;
 
     // Distance threshold for "too close" warning (inches)
-    public final static double TARGET_TOO_CLOSE_THRESHOLD_INCHES = 24.0;
+    public final static double TARGET_TOO_CLOSE_THRESHOLD_INCHES = 76.0;
     
     // Minimum time before autonomous parking is allowed (seconds)
     public final static long MIN_TIME_TO_PARK = 110; // 90 seconds = 1.5 minutes
