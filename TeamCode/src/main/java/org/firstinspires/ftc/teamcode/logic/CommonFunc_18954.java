@@ -234,7 +234,7 @@ public class CommonFunc_18954 {
     public void TurnOnIntake(double IntakeVelocity,double BallPusherVelocity)
     {
         intakeMotor.setPower(CommonDefs.IntakePower);
-        ballPusherMotor.setPower(CommonDefs.BallPusher_IntakePower);
+        //ballPusherMotor.setPower(CommonDefs.BallPusher_IntakePower);
     }
 
     public void TurnOffIntake()
@@ -326,20 +326,35 @@ public class CommonFunc_18954 {
     public double turn_to_shoot(double speed, double relative_angle, double absolute_angle, double timeoutS, LLResult CameraResult, LocalizerDecode mlocalize) {
 
         double angle_turned=relative_angle;
+
+        if(CameraResult != null && CameraResult.isValid())
+        {
+            opMode.telemetry.addData("Camera", CameraResult.getTx());
+        }
+        else {
+            opMode.telemetry.addData("Camera Unavailable",0);
+        }
+
+
         if(use_localizer_turn && (CameraResult != null && CameraResult.isValid()) && (mlocalize!=null))
         {
+            opMode.telemetry.addData("Camera heading camera", CameraResult.getTx());
+            opMode.telemetry.addData("Camera heading correction", mlocalize.getHeadingCorrectionDeg());
             turn_relative(speed,mlocalize.getHeadingCorrectionDeg(),timeoutS);
             relative_angle=mlocalize.getHeadingCorrectionDeg();
 
         }
         else 
         {
+
             if(use_relative_turn)
             {
+                opMode.telemetry.addData("NonCam heading relative", relative_angle);
                 turn_relative(speed, relative_angle, timeoutS);
             }
             else
             {
+                opMode.telemetry.addData("NonCam heading absolute", absolute_angle);
                 turn_absolute(speed, absolute_angle, timeoutS);
             }
         }
