@@ -147,9 +147,18 @@ public class AutonMovement {
             turn_to_shoot_angle=objCommonFunc.turn_to_shoot(closeParams.TURN_SPEED,closeParams.TURN_TO_COLLECT+ closeParams.TURN_ANTI_CLOCKWISE_ERROR_DELTA,0, closeParams.TURN_TIMEOUT, CameraResult, mLocalizer);
      
         }
-        //PeriodicUpdate(System.currentTimeMillis());
+
         opMode.telemetry.addData("Step 6", objCommonFunc.getIMUYaw());
         opMode.telemetry.update();
+
+        PeriodicUpdate(System.currentTimeMillis());
+        if(CameraResult != null && CameraResult.isValid())
+        {
+            opMode.telemetry.addData("Recorrecting for second correction as the first one probably corrected without camera", objCommonFunc.getIMUYaw());
+            //you can see the camera , try correcting
+            turn_to_shoot_angle=objCommonFunc.turn_to_shoot(closeParams.TURN_SPEED,0,imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES), closeParams.TURN_TIMEOUT, CameraResult, mLocalizer);
+
+        }
         
         // Step 7: Second shooting sequence
           objCommonFunc.shootPowerCore(closeParams.LAUNCHER_POS1_RPM, false, closeParams.BALLPUSHER_MAX_VELOCITY,false,4);
@@ -313,6 +322,14 @@ public class AutonMovement {
         opMode.telemetry.update();
         
         // Step 7: Second shooting sequence
+        PeriodicUpdate(System.currentTimeMillis());
+        if(CameraResult != null && CameraResult.isValid())
+        {
+            opMode.telemetry.addData("Recorrecting for second correction as the first one probably corrected without camera", objCommonFunc.getIMUYaw());
+            //you can see the camera , try correcting
+            turn_to_shoot_angle=objCommonFunc.turn_to_shoot(farParams.TURN_SPEED,0,imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES), farParams.TURN_TIMEOUT, CameraResult, mLocalizer);
+
+        }
          objCommonFunc.shootPowerCore(farParams.LAUNCHER_POS1_RPM, false, farParams.BALLPUSHER_MAX_VELOCITY,true,3);
         objCommonFunc.TurnOffIntake();
         PeriodicUpdate(System.currentTimeMillis());
